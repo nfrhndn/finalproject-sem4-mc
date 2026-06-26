@@ -1,4 +1,4 @@
-import 'api_endpoints_io.dart' if (dart.library.html) 'api_endpoints_web.dart' as _endpoints;
+import 'api_endpoints_io.dart' if (dart.library.html) 'api_endpoints_web.dart' as endpoints;
 
 /// API endpoint constants
 class ApiEndpoints {
@@ -7,7 +7,7 @@ class ApiEndpoints {
   // Base URL - automatically selects based on platform
   // Uses conditional import: dart:io (Platform) on mobile/desktop, stub on web
   // For physical device testing, change localhost to your computer's IP
-  static String get baseUrl => _endpoints.getApiBaseUrl();
+  static String get baseUrl => endpoints.getApiBaseUrl();
 
   // For physical device testing, uncomment and use your IP:
   // static String get baseUrl => 'http://YOUR_IP:8000/api';

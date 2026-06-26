@@ -82,5 +82,5 @@ class CachedImage extends StatelessWidget {
 
 /// A cached image that can be used as a decoration image
 class CachedImageProvider extends CachedNetworkImageProvider {
-  CachedImageProvider(super.url);
+  const CachedImageProvider(super.url);
 }
