@@ -1,4 +1,4 @@
-import 'package:padbro/domain/entities/booking.dart';
+import 'package:padalpro/domain/entities/booking.dart';
 
 /// Booking model - represents a booking from the API
 class BookingModel extends Booking {

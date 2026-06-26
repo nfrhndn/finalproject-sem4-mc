@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:padbro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
 
 // Export all theme files for convenient imports
 export 'app_colors.dart';
 export 'app_text_styles.dart';
 
-/// Main theme configuration for the PadBro app
+/// Main theme configuration for the PadalPro app
 /// Uses centralized AppColors and AppTextStyles
 class AppTheme {
   AppTheme._();

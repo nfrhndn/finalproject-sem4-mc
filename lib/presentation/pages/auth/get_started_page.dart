@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/presentation/pages/auth/sign_in_page.dart';
-import 'package:padbro/presentation/pages/auth/sign_up_page.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/presentation/pages/auth/sign_in_page.dart';
+import 'package:padalpro/presentation/pages/auth/sign_up_page.dart';
 
 class GetStartedPage extends StatelessWidget {
   const GetStartedPage({super.key});
@@ -110,7 +110,7 @@ class GetStartedPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'PadBro',
+                        'PadalPro',
                         style: AppTextStyles.white(AppTextStyles.heading1),
                       ),
                     ],

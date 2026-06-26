@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/injection/injection_container.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/data/datasources/court_remote_datasource.dart';
-import 'package:padbro/domain/repositories/booking_repository.dart';
-import 'package:padbro/domain/repositories/court_repository.dart';
-import 'package:padbro/presentation/pages/payment/payment_page.dart';
+import 'package:padalpro/core/injection/injection_container.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/data/datasources/court_remote_datasource.dart';
+import 'package:padalpro/domain/repositories/booking_repository.dart';
+import 'package:padalpro/domain/repositories/court_repository.dart';
+import 'package:padalpro/presentation/pages/payment/payment_page.dart';
 
 class BookingPage extends StatefulWidget {
   final int courtId;

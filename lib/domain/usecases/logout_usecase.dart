@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:padbro/core/errors/failures.dart';
-import 'package:padbro/domain/repositories/auth_repository.dart';
+import 'package:padalpro/core/errors/failures.dart';
+import 'package:padalpro/domain/repositories/auth_repository.dart';
 
 /// Logout use case
 /// Handles user logout business logic

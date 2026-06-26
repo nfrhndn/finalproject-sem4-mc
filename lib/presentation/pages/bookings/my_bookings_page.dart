@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/core/injection/injection_container.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/domain/entities/booking.dart';
-import 'package:padbro/presentation/blocs/booking/booking_bloc.dart';
-import 'package:padbro/presentation/blocs/booking/booking_event.dart';
-import 'package:padbro/presentation/blocs/booking/booking_state.dart';
-import 'package:padbro/presentation/pages/bookings/booking_details_page.dart';
-import 'package:padbro/presentation/pages/browse/browse_page.dart';
-import 'package:padbro/presentation/pages/profile/profile_page.dart';
-import 'package:padbro/presentation/pages/scoreboard/scoreboard_page.dart';
-import 'package:padbro/presentation/pages/search/search_page.dart';
+import 'package:padalpro/core/injection/injection_container.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/domain/entities/booking.dart';
+import 'package:padalpro/presentation/blocs/booking/booking_bloc.dart';
+import 'package:padalpro/presentation/blocs/booking/booking_event.dart';
+import 'package:padalpro/presentation/blocs/booking/booking_state.dart';
+import 'package:padalpro/presentation/pages/bookings/booking_details_page.dart';
+import 'package:padalpro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/presentation/pages/profile/profile_page.dart';
+import 'package:padalpro/presentation/pages/scoreboard/scoreboard_page.dart';
+import 'package:padalpro/presentation/pages/search/search_page.dart';
 
 class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});

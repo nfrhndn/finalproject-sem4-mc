@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/core/utils/snackbar_helper.dart';
-import 'package:padbro/presentation/blocs/auth/auth.dart';
-import 'package:padbro/presentation/pages/auth/sign_up_page.dart';
-import 'package:padbro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/core/utils/snackbar_helper.dart';
+import 'package:padalpro/presentation/blocs/auth/auth.dart';
+import 'package:padalpro/presentation/pages/auth/sign_up_page.dart';
+import 'package:padalpro/presentation/pages/browse/browse_page.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -150,7 +150,7 @@ class _SignInPageState extends State<SignInPage> {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  'PadBro',
+                                  'PadalPro',
                                   style: AppTextStyles.heading1,
                                 ),
                               ],

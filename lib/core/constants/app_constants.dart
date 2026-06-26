@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'PadBro';
+  static const String appName = 'PadalPro';
   static const String baseUrl = 'http://localhost:8000/api';
 
   // For physical device testing, use your computer's IP:

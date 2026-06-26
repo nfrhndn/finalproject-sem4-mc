@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:padbro/core/errors/exceptions.dart';
-import 'package:padbro/core/errors/failures.dart';
-import 'package:padbro/data/datasources/booking_remote_datasource.dart';
-import 'package:padbro/domain/entities/booking.dart';
-import 'package:padbro/domain/repositories/booking_repository.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/errors/failures.dart';
+import 'package:padalpro/data/datasources/booking_remote_datasource.dart';
+import 'package:padalpro/domain/entities/booking.dart';
+import 'package:padalpro/domain/repositories/booking_repository.dart';
 
 /// Implementation of BookingRepository
 class BookingRepositoryImpl implements BookingRepository {

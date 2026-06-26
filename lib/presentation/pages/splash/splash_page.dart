@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/presentation/blocs/auth/auth.dart';
-import 'package:padbro/presentation/pages/browse/browse_page.dart';
-import 'package:padbro/presentation/pages/onboarding/onboarding_page.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/presentation/blocs/auth/auth.dart';
+import 'package:padalpro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/presentation/pages/onboarding/onboarding_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -122,7 +122,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                       const SizedBox(height: 32),
                       // App Name
                       Text(
-                        'PadBro',
+                        'PadalPro',
                         style: AppTextStyles.heading1.copyWith(fontSize: 40),
                       ),
                       const SizedBox(height: 8),

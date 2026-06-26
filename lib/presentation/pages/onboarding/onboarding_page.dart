@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/presentation/pages/auth/get_started_page.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/presentation/pages/auth/get_started_page.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -96,7 +96,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'PadBro',
+                        'PadalPro',
                         style: AppTextStyles.white(AppTextStyles.heading2).copyWith(fontWeight: FontWeight.w800),
                       ),
                     ],

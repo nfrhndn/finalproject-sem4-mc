@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/core/utils/snackbar_helper.dart';
-import 'package:padbro/presentation/pages/bookings/my_bookings_page.dart';
-import 'package:padbro/presentation/pages/browse/browse_page.dart';
-import 'package:padbro/presentation/pages/profile/profile_page.dart';
-import 'package:padbro/presentation/pages/search/search_page.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/core/utils/snackbar_helper.dart';
+import 'package:padalpro/presentation/pages/bookings/my_bookings_page.dart';
+import 'package:padalpro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/presentation/pages/profile/profile_page.dart';
+import 'package:padalpro/presentation/pages/search/search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ScoreboardPage extends StatefulWidget {

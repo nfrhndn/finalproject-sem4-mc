@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
 
 /// Helper class for showing snackbars at the top of the screen
 class SnackBarHelper {

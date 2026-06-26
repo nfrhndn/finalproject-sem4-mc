@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/core/injection/injection_container.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/domain/entities/court.dart';
-import 'package:padbro/presentation/blocs/court/court.dart';
-import 'package:padbro/presentation/pages/court/court_details_page.dart';
+import 'package:padalpro/core/injection/injection_container.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/domain/entities/court.dart';
+import 'package:padalpro/presentation/blocs/court/court.dart';
+import 'package:padalpro/presentation/pages/court/court_details_page.dart';
 
 class CityDetailsPage extends StatefulWidget {
   final int cityId;

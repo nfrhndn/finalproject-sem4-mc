@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
 
 /// Section header with title and optional "See All" action
 class SectionHeader extends StatelessWidget {

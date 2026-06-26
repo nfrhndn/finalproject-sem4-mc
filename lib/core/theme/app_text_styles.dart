@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:padbro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
 
-/// Centralized text styles for the PadBro app
+/// Centralized text styles for the PadalPro app
 /// Use these instead of defining text styles inline
 class AppTextStyles {
   AppTextStyles._();

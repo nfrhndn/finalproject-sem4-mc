@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:padbro/core/injection/injection_container.dart';
-import 'package:padbro/core/utils/snackbar_helper.dart';
-import 'package:padbro/domain/repositories/booking_repository.dart';
-import 'package:padbro/presentation/pages/booking/success_booking_page.dart';
+import 'package:padalpro/core/injection/injection_container.dart';
+import 'package:padalpro/core/utils/snackbar_helper.dart';
+import 'package:padalpro/domain/repositories/booking_repository.dart';
+import 'package:padalpro/presentation/pages/booking/success_booking_page.dart';
 
 class PaymentPage extends StatefulWidget {
   final int bookingId;
@@ -1045,7 +1045,7 @@ class _PaymentPageState extends State<PaymentPage> {
         const SizedBox(height: 12),
         _buildBankDetail('Account Number', '8234567890'),
         const SizedBox(height: 10),
-        _buildBankDetail('Account Name', 'PadBro Indonesia'),
+        _buildBankDetail('Account Name', 'PadalPro Indonesia'),
         const SizedBox(height: 20),
         // Instructions
         Container(

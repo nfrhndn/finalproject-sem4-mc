@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/domain/repositories/court_repository.dart';
-import 'package:padbro/presentation/blocs/court/court_event.dart';
-import 'package:padbro/presentation/blocs/court/court_state.dart';
+import 'package:padalpro/domain/repositories/court_repository.dart';
+import 'package:padalpro/presentation/blocs/court/court_event.dart';
+import 'package:padalpro/presentation/blocs/court/court_state.dart';
 
 /// BLoC for managing court state
 class CourtBloc extends Bloc<CourtEvent, CourtState> {

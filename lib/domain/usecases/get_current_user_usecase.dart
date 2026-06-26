@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:padbro/core/errors/failures.dart';
-import 'package:padbro/domain/entities/user.dart';
-import 'package:padbro/domain/repositories/auth_repository.dart';
+import 'package:padalpro/core/errors/failures.dart';
+import 'package:padalpro/domain/entities/user.dart';
+import 'package:padalpro/domain/repositories/auth_repository.dart';
 
 /// Get current user use case
 /// Retrieves the currently authenticated user

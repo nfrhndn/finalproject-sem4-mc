@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
 
 /// Floating bottom navigation bar used in main pages
 class BottomNavBar extends StatelessWidget {

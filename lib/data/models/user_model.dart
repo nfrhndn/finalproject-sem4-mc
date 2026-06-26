@@ -1,4 +1,4 @@
-import 'package:padbro/domain/entities/user.dart';
+import 'package:padalpro/domain/entities/user.dart';
 
 /// Data model for User with JSON serialization
 class UserModel extends User {

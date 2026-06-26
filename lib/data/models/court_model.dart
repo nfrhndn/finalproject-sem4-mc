@@ -1,4 +1,4 @@
-import 'package:padbro/domain/entities/court.dart';
+import 'package:padalpro/domain/entities/court.dart';
 
 /// Court model - represents a court from the API
 class CourtModel extends Court {

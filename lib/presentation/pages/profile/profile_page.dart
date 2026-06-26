@@ -1,16 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/domain/entities/user.dart';
-import 'package:padbro/presentation/blocs/auth/auth.dart';
-import 'package:padbro/presentation/pages/auth/sign_in_page.dart';
-import 'package:padbro/presentation/pages/bookings/my_bookings_page.dart';
-import 'package:padbro/presentation/pages/profile/change_password_page.dart';
-import 'package:padbro/presentation/pages/profile/edit_profile_page.dart';
-import 'package:padbro/presentation/pages/scoreboard/scoreboard_page.dart';
-import 'package:padbro/presentation/pages/search/search_page.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/domain/entities/user.dart';
+import 'package:padalpro/presentation/blocs/auth/auth.dart';
+import 'package:padalpro/presentation/pages/auth/sign_in_page.dart';
+import 'package:padalpro/presentation/pages/bookings/my_bookings_page.dart';
+import 'package:padalpro/presentation/pages/profile/change_password_page.dart';
+import 'package:padalpro/presentation/pages/profile/edit_profile_page.dart';
+import 'package:padalpro/presentation/pages/scoreboard/scoreboard_page.dart';
+import 'package:padalpro/presentation/pages/search/search_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

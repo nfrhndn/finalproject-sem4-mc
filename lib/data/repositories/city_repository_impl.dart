@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import 'package:padbro/core/errors/exceptions.dart';
-import 'package:padbro/core/errors/failures.dart';
-import 'package:padbro/data/datasources/city_remote_datasource.dart';
-import 'package:padbro/domain/entities/city.dart';
-import 'package:padbro/domain/repositories/city_repository.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/errors/failures.dart';
+import 'package:padalpro/data/datasources/city_remote_datasource.dart';
+import 'package:padalpro/domain/entities/city.dart';
+import 'package:padalpro/domain/repositories/city_repository.dart';
 
 /// Implementation of CityRepository
 class CityRepositoryImpl implements CityRepository {

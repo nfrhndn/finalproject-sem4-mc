@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
-import 'package:padbro/core/theme/app_text_styles.dart';
-import 'package:padbro/presentation/pages/bookings/my_bookings_page.dart';
-import 'package:padbro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_text_styles.dart';
+import 'package:padalpro/presentation/pages/bookings/my_bookings_page.dart';
+import 'package:padalpro/presentation/pages/browse/browse_page.dart';
 
 class SuccessBookingPage extends StatelessWidget {
   final String courtName;

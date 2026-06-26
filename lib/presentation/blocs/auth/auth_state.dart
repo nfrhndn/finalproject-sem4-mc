@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:padbro/domain/entities/user.dart';
+import 'package:padalpro/domain/entities/user.dart';
 
 /// Base class for all auth states
 abstract class AuthState extends Equatable {

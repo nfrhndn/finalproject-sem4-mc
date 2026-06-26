@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/domain/repositories/city_repository.dart';
-import 'package:padbro/presentation/blocs/city/city_event.dart';
-import 'package:padbro/presentation/blocs/city/city_state.dart';
+import 'package:padalpro/domain/repositories/city_repository.dart';
+import 'package:padalpro/presentation/blocs/city/city_event.dart';
+import 'package:padalpro/presentation/blocs/city/city_state.dart';
 
 /// BLoC for managing city state
 class CityBloc extends Bloc<CityEvent, CityState> {

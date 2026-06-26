@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:padbro/core/errors/exceptions.dart';
-import 'package:padbro/core/network/api_endpoints.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/network/api_endpoints.dart';
 
 /// API Client for making HTTP requests
 class ApiClient {

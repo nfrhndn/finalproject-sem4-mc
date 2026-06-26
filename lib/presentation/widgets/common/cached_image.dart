@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:padbro/core/theme/app_colors.dart';
+import 'package:padalpro/core/theme/app_colors.dart';
 
 /// A reusable cached network image widget with loading and error states
 class CachedImage extends StatelessWidget {

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:padbro/core/errors/exceptions.dart';
-import 'package:padbro/data/models/user_model.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/data/models/user_model.dart';
 
 /// Local data source for caching authentication data
 abstract class AuthLocalDataSource {

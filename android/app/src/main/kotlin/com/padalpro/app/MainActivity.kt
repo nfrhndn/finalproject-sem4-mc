@@ -1,4 +1,4 @@
-package com.example.finalproject_sem4_mc
+package com.padalpro.app
 
 import io.flutter.embedding.android.FlutterActivity
 

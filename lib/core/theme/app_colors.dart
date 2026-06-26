@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Centralized color constants for the PadBro app
+/// Centralized color constants for the PadalPro app
 /// Use these instead of defining colors locally in each page
 class AppColors {
   AppColors._();

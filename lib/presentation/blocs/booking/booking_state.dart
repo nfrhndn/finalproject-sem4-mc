@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:padbro/domain/entities/booking.dart';
+import 'package:padalpro/domain/entities/booking.dart';
 
 /// Base class for all booking states
 abstract class BookingState extends Equatable {

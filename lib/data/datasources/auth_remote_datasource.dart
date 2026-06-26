@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:padbro/core/network/api_client.dart';
-import 'package:padbro/core/network/api_endpoints.dart';
-import 'package:padbro/data/models/user_model.dart';
+import 'package:padalpro/core/network/api_client.dart';
+import 'package:padalpro/core/network/api_endpoints.dart';
+import 'package:padalpro/data/models/user_model.dart';
 
 /// Remote data source for authentication operations
 abstract class AuthRemoteDataSource {

@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:padbro/core/errors/exceptions.dart';
-import 'package:padbro/core/errors/failures.dart';
-import 'package:padbro/data/datasources/auth_local_datasource.dart';
-import 'package:padbro/data/datasources/auth_remote_datasource.dart';
-import 'package:padbro/domain/entities/user.dart';
-import 'package:padbro/domain/repositories/auth_repository.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/errors/failures.dart';
+import 'package:padalpro/data/datasources/auth_local_datasource.dart';
+import 'package:padalpro/data/datasources/auth_remote_datasource.dart';
+import 'package:padalpro/domain/entities/user.dart';
+import 'package:padalpro/domain/repositories/auth_repository.dart';
 
 /// Implementation of AuthRepository
 /// Connects remote and local data sources, handles error mapping

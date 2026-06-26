@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:padbro/domain/entities/city.dart';
+import 'package:padalpro/domain/entities/city.dart';
 
 /// Base class for all city states
 abstract class CityState extends Equatable {

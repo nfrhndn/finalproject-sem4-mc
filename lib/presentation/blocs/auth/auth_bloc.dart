@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:padbro/core/errors/failures.dart';
-import 'package:padbro/domain/entities/user.dart';
-import 'package:padbro/domain/repositories/auth_repository.dart';
-import 'package:padbro/presentation/blocs/auth/auth_event.dart';
-import 'package:padbro/presentation/blocs/auth/auth_state.dart';
+import 'package:padalpro/core/errors/failures.dart';
+import 'package:padalpro/domain/entities/user.dart';
+import 'package:padalpro/domain/repositories/auth_repository.dart';
+import 'package:padalpro/presentation/blocs/auth/auth_event.dart';
+import 'package:padalpro/presentation/blocs/auth/auth_state.dart';
 
 /// BLoC for managing authentication state
 class AuthBloc extends Bloc<AuthEvent, AuthState> {

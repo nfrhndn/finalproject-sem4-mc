@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:padbro/data/datasources/court_remote_datasource.dart';
-import 'package:padbro/domain/entities/court.dart';
+import 'package:padalpro/data/datasources/court_remote_datasource.dart';
+import 'package:padalpro/domain/entities/court.dart';
 
 /// Base class for all court states
 abstract class CourtState extends Equatable {

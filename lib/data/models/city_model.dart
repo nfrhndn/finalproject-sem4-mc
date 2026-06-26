@@ -1,4 +1,4 @@
-import 'package:padbro/domain/entities/city.dart';
+import 'package:padalpro/domain/entities/city.dart';
 
 /// City model - represents a city from the API
 class CityModel extends City {

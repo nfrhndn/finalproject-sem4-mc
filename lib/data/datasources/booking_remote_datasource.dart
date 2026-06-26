@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:padbro/core/network/api_client.dart';
-import 'package:padbro/core/network/api_endpoints.dart';
-import 'package:padbro/data/models/booking_model.dart';
+import 'package:padalpro/core/network/api_client.dart';
+import 'package:padalpro/core/network/api_endpoints.dart';
+import 'package:padalpro/data/models/booking_model.dart';
 
 /// Response model for creating a booking
 class CreateBookingResponse {
