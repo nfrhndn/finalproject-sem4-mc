@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 /// User entity representing the core user data
 class User extends Equatable {
-  final int id;
+  final String id;
   final String name;
   final String email;
   final String? phone;

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
-import 'package:padalpro/core/network/api_client.dart';
-import 'package:padalpro/core/network/api_endpoints.dart';
+import 'package:intl/intl.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/data/models/booking_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 /// Response model for creating a booking
 class CreateBookingResponse {
@@ -56,45 +56,42 @@ abstract class BookingRemoteDataSource {
 
 /// Implementation of BookingRemoteDataSource using ApiClient
 class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
-  final ApiClient _apiClient;
+  final SupabaseClient _supabaseClient;
 
-  BookingRemoteDataSourceImpl({required ApiClient apiClient})
-      : _apiClient = apiClient;
+  BookingRemoteDataSourceImpl({required SupabaseClient supabaseClient})
+      : _supabaseClient = supabaseClient;
 
   @override
   Future<List<BookingModel>> getMyBookings({String? status}) async {
-    final queryParams = <String, dynamic>{};
-    if (status != null) {
-      queryParams['status'] = status;
+    try {
+      var query = _baseBookingQuery();
+      if (status != null) {
+        query = query.eq('status', status);
+      }
+
+      final data = await query.order('booking_date', ascending: false).order('start_hour');
+      return data.map((booking) => BookingModel.fromJson(_bookingJson(booking))).toList();
+    } catch (e) {
+      throw ServerException(message: 'Failed to load bookings: $e');
     }
-
-    final response = await _apiClient.get(
-      ApiEndpoints.bookings,
-      queryParameters: queryParams.isNotEmpty ? queryParams : null,
-    );
-
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    final bookingsData = data['bookings'] as List<dynamic>;
-
-    return bookingsData
-        .map((booking) => BookingModel.fromJson(booking as Map<String, dynamic>))
-        .toList();
   }
 
   @override
   Future<BookingModel?> getNextBooking() async {
-    final response = await _apiClient.get(ApiEndpoints.nextBooking);
+    try {
+      final data = await _baseBookingQuery()
+          .gte('booking_date', DateFormat('yyyy-MM-dd').format(DateTime.now()))
+          .filter('status', 'in', '(pending_payment,paid)')
+          .order('booking_date')
+          .order('start_hour')
+          .limit(1)
+          .maybeSingle();
 
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    final bookingData = data['booking'];
-
-    if (bookingData == null) {
-      return null;
+      if (data == null) return null;
+      return BookingModel.fromJson(_bookingJson(data));
+    } catch (e) {
+      throw ServerException(message: 'Failed to load next booking: $e');
     }
-
-    return BookingModel.fromJson(bookingData as Map<String, dynamic>);
   }
 
   @override
@@ -104,20 +101,21 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     required int startHour,
     required int endHour,
   }) async {
-    final response = await _apiClient.post(
-      ApiEndpoints.createBooking,
-      data: {
-        'court_id': courtId,
-        'date': date,
-        'start_hour': startHour,
-        'end_hour': endHour,
-      },
-    );
+    try {
+      final data = await _supabaseClient.rpc(
+        'create_booking',
+        params: {
+          'p_court_id': courtId,
+          'p_date': date,
+          'p_start_hour': startHour,
+          'p_end_hour': endHour,
+        },
+      );
 
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-
-    return CreateBookingResponse.fromJson(data);
+      return CreateBookingResponse.fromJson(Map<String, dynamic>.from(data as Map));
+    } catch (e) {
+      throw ServerException(message: 'Failed to create booking: $e');
+    }
   }
 
   @override
@@ -125,26 +123,122 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     required int bookingId,
     required File proofOfPayment,
   }) async {
-    final formData = FormData.fromMap({
-      'proof_of_payment': await MultipartFile.fromFile(
-        proofOfPayment.path,
-        filename: 'proof_of_payment.jpg',
-      ),
-    });
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) {
+        throw const AuthException(message: 'User is not authenticated');
+      }
 
-    final response = await _apiClient.post(
-      ApiEndpoints.confirmBooking(bookingId),
-      data: formData,
-    );
+      final extension = proofOfPayment.path.split('.').last;
+      final objectPath =
+          '$userId/$bookingId-${DateTime.now().millisecondsSinceEpoch}.$extension';
+      await _supabaseClient.storage.from('payment-proofs').upload(
+            objectPath,
+            proofOfPayment,
+            fileOptions: const FileOptions(upsert: true),
+          );
 
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
+      final booking = await _supabaseClient
+          .from('bookings')
+          .update({'status': 'paid'})
+          .eq('id', bookingId)
+          .select()
+          .single();
 
-    return BookingModel.fromJson(data['booking'] as Map<String, dynamic>);
+      await _supabaseClient.from('payments').insert({
+        'booking_id': bookingId,
+        'user_id': userId,
+        'provider': 'manual',
+        'provider_order_id': 'MANUAL-$bookingId-${DateTime.now().millisecondsSinceEpoch}',
+        'amount': booking['grand_total'],
+        'status': 'settlement',
+        'raw_payload': {'proof_path': objectPath},
+      });
+
+      final refreshedBooking = await _baseBookingQuery().eq('id', bookingId).single();
+      return BookingModel.fromJson(_bookingJson(refreshedBooking));
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(message: 'Failed to confirm booking: $e');
+    }
   }
 
   @override
   Future<void> cancelBooking(int bookingId) async {
-    await _apiClient.delete(ApiEndpoints.cancelBooking(bookingId));
+    try {
+      await _supabaseClient
+          .from('bookings')
+          .update({'status': 'cancelled'})
+          .eq('id', bookingId);
+    } catch (e) {
+      throw ServerException(message: 'Failed to cancel booking: $e');
+    }
+  }
+
+  dynamic _baseBookingQuery() {
+    return _supabaseClient.from('bookings').select(
+          'id, booking_date, start_hour, end_hour, total_hours, price_per_hour, '
+          'sub_total, tax_amount, grand_total, status, created_at, '
+          'courts(id, name, thumbnail_url, material, address, phone, '
+          'cities(id, name), court_categories(id, name))',
+        );
+  }
+
+  Map<String, dynamic> _bookingJson(Map<String, dynamic> json) {
+    final date = DateTime.parse(json['booking_date'] as String);
+    final startHour = (json['start_hour'] as num).toInt();
+    final endHour = (json['end_hour'] as num).toInt();
+    final court = json['courts'] as Map<String, dynamic>;
+
+    return {
+      'id': (json['id'] as num).toInt(),
+      'date': DateFormat('yyyy-MM-dd').format(date),
+      'date_formatted': DateFormat('EEEE, dd MMM yyyy').format(date),
+      'start_time': '${startHour.toString().padLeft(2, '0')}:00',
+      'end_time': '${endHour.toString().padLeft(2, '0')}:00',
+      'time_slot':
+          '${startHour.toString().padLeft(2, '0')}:00 - ${endHour.toString().padLeft(2, '0')}:00',
+      'total_hours': (json['total_hours'] as num).toInt(),
+      'price_per_hour': (json['price_per_hour'] as num).toInt(),
+      'sub_total': (json['sub_total'] as num).toInt(),
+      'tax_amount': (json['tax_amount'] as num).toInt(),
+      'grand_total': (json['grand_total'] as num).toInt(),
+      'grand_total_formatted': _formatRupiah((json['grand_total'] as num).toInt()),
+      'status': json['status'],
+      'court': {
+        'id': (court['id'] as num).toInt(),
+        'name': court['name'],
+        'thumbnail': court['thumbnail_url'],
+        'material': court['material'],
+        'address': court['address'],
+        'phone': court['phone'],
+        'city': court['cities'] != null
+            ? {
+                'id': (court['cities']['id'] as num).toInt(),
+                'name': court['cities']['name'],
+              }
+            : null,
+        'category': court['court_categories'] != null
+            ? {
+                'id': (court['court_categories']['id'] as num).toInt(),
+                'name': court['court_categories']['name'],
+              }
+            : null,
+      },
+      'created_at': json['created_at'],
+    };
+  }
+
+  String _formatRupiah(int value) {
+    final digits = value.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(digits[i]);
+    }
+    return 'Rp $buffer';
   }
 }

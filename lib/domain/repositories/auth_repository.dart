@@ -26,6 +26,9 @@ abstract class AuthRepository {
     required String password,
   });
 
+  /// Login with Google SSO
+  Future<Either<Failure, void>> signInWithGoogle();
+
   /// Logout the current user
   /// Returns [void] on success or [Failure] on error
   Future<Either<Failure, void>> logout();

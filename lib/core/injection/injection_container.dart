@@ -19,6 +19,7 @@ import 'package:padalpro/presentation/blocs/auth/auth_bloc.dart';
 import 'package:padalpro/presentation/blocs/booking/booking_bloc.dart';
 import 'package:padalpro/presentation/blocs/city/city_bloc.dart';
 import 'package:padalpro/presentation/blocs/court/court_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Global service locator instance
 final sl = GetIt.instance;
@@ -36,11 +37,14 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<ApiClient>(
     () => ApiClient(secureStorage: sl<FlutterSecureStorage>()),
   );
+  sl.registerLazySingleton<SupabaseClient>(
+    () => Supabase.instance.client,
+  );
 
   // ==================== Data Sources ====================
   // Auth Remote
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    () => AuthRemoteDataSourceImpl(supabaseClient: sl<SupabaseClient>()),
   );
 
   // Auth Local
@@ -50,17 +54,17 @@ Future<void> initializeDependencies() async {
 
   // City Remote
   sl.registerLazySingleton<CityRemoteDataSource>(
-    () => CityRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    () => CityRemoteDataSourceImpl(supabaseClient: sl<SupabaseClient>()),
   );
 
   // Court Remote
   sl.registerLazySingleton<CourtRemoteDataSource>(
-    () => CourtRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    () => CourtRemoteDataSourceImpl(supabaseClient: sl<SupabaseClient>()),
   );
 
   // Booking Remote
   sl.registerLazySingleton<BookingRemoteDataSource>(
-    () => BookingRemoteDataSourceImpl(apiClient: sl<ApiClient>()),
+    () => BookingRemoteDataSourceImpl(supabaseClient: sl<SupabaseClient>()),
   );
 
   // Search Local

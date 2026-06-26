@@ -61,6 +61,11 @@ class AuthLoginRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+/// Event to login with Google SSO
+class AuthGoogleSignInRequested extends AuthEvent {
+  const AuthGoogleSignInRequested();
+}
+
 /// Event to logout
 class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();

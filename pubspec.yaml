@@ -65,6 +65,7 @@ dependencies:
 
   # Dependency Injection
   get_it: ^7.6.4
+  supabase_flutter: ^2.15.0
 
 dev_dependencies:
   flutter_test:

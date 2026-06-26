@@ -1,6 +1,6 @@
-import 'package:padalpro/core/network/api_client.dart';
-import 'package:padalpro/core/network/api_endpoints.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/data/models/court_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Time slot model for available slots API response
 class TimeSlotModel {
@@ -118,51 +118,37 @@ abstract class CourtRemoteDataSource {
 
 /// Implementation of CourtRemoteDataSource using ApiClient
 class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
-  final ApiClient _apiClient;
+  final SupabaseClient _supabaseClient;
 
-  CourtRemoteDataSourceImpl({required ApiClient apiClient})
-      : _apiClient = apiClient;
+  CourtRemoteDataSourceImpl({required SupabaseClient supabaseClient})
+      : _supabaseClient = supabaseClient;
 
   @override
   Future<List<CourtModel>> getFeaturedCourts({int? limit}) async {
-    final queryParams = <String, dynamic>{};
-    if (limit != null) {
-      queryParams['limit'] = limit;
+    try {
+      var query = _baseCourtQuery().eq('is_featured', true).order('id');
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+      final data = await query;
+      return data.map((json) => CourtModel.fromJson(_courtJson(json))).toList();
+    } catch (e) {
+      throw ServerException(message: 'Failed to load featured courts: $e');
     }
-
-    final response = await _apiClient.get(
-      ApiEndpoints.featuredCourts,
-      queryParameters: queryParams.isNotEmpty ? queryParams : null,
-    );
-
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    final courtsData = data['courts'] as List<dynamic>;
-
-    return courtsData
-        .map((json) => CourtModel.fromJson(json as Map<String, dynamic>))
-        .toList();
   }
 
   @override
   Future<List<CourtModel>> getPopularCourts({int? limit}) async {
-    final queryParams = <String, dynamic>{};
-    if (limit != null) {
-      queryParams['limit'] = limit;
+    try {
+      var query = _baseCourtQuery().order('id');
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+      final data = await query;
+      return data.map((json) => CourtModel.fromJson(_courtJson(json))).toList();
+    } catch (e) {
+      throw ServerException(message: 'Failed to load popular courts: $e');
     }
-
-    final response = await _apiClient.get(
-      ApiEndpoints.popularCourts,
-      queryParameters: queryParams.isNotEmpty ? queryParams : null,
-    );
-
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    final courtsData = data['courts'] as List<dynamic>;
-
-    return courtsData
-        .map((json) => CourtModel.fromJson(json as Map<String, dynamic>))
-        .toList();
   }
 
   @override
@@ -176,54 +162,121 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
     int? perPage,
     int? page,
   }) async {
-    final queryParams = <String, dynamic>{};
-    if (cityId != null) queryParams['city_id'] = cityId;
-    if (categoryId != null) queryParams['category_id'] = categoryId;
-    if (material != null) queryParams['material'] = material;
-    if (search != null) queryParams['search'] = search;
-    if (minPrice != null) queryParams['min_price'] = minPrice;
-    if (maxPrice != null) queryParams['max_price'] = maxPrice;
-    if (perPage != null) queryParams['per_page'] = perPage;
-    if (page != null) queryParams['page'] = page;
+    try {
+      var query = _baseCourtQuery();
+      if (cityId != null) query = query.eq('city_id', cityId);
+      if (categoryId != null) query = query.eq('category_id', categoryId);
+      if (material != null) query = query.eq('material', material);
+      if (search != null && search.isNotEmpty) query = query.ilike('name', '%$search%');
+      if (minPrice != null) query = query.gte('price_per_hour', minPrice);
+      if (maxPrice != null) query = query.lte('price_per_hour', maxPrice);
 
-    final response = await _apiClient.get(
-      ApiEndpoints.courts,
-      queryParameters: queryParams.isNotEmpty ? queryParams : null,
-    );
+      final int currentPage = page ?? 1;
+      final int pageSize = perPage ?? 10;
+      final int from = (currentPage - 1) * pageSize;
+      final int to = from + pageSize - 1;
+      final data = await query.order('id').range(from, to);
+      final courts = data.map((json) => CourtModel.fromJson(_courtJson(json))).toList();
 
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    final courtsData = data['courts'] as List<dynamic>;
-    final paginationData = data['pagination'] as Map<String, dynamic>;
-
-    final courts = courtsData
-        .map((json) => CourtModel.fromJson(json as Map<String, dynamic>))
-        .toList();
-
-    return PaginatedCourtsResponse(
-      courts: courts,
-      pagination: PaginationInfo.fromJson(paginationData),
-    );
+      return PaginatedCourtsResponse(
+        courts: courts,
+        pagination: PaginationInfo(
+          currentPage: currentPage,
+          lastPage: courts.length < pageSize ? currentPage : currentPage + 1,
+          perPage: pageSize,
+          total: (from + courts.length).toInt(),
+        ),
+      );
+    } catch (e) {
+      throw ServerException(message: 'Failed to load courts: $e');
+    }
   }
 
   @override
   Future<CourtModel> getCourtDetails(int id) async {
-    final response = await _apiClient.get(ApiEndpoints.courtDetails(id.toString()));
-
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    return CourtModel.fromJson(data['court'] as Map<String, dynamic>);
+    try {
+      final data = await _baseCourtQuery().eq('id', id).single();
+      return CourtModel.fromJson(_courtJson(data));
+    } catch (e) {
+      throw ServerException(message: 'Failed to load court details: $e');
+    }
   }
 
   @override
   Future<AvailableSlotsResponse> getAvailableSlots(int courtId, String date) async {
-    final response = await _apiClient.get(
-      ApiEndpoints.courtAvailableSlots(courtId.toString()),
-      queryParameters: {'date': date},
-    );
+    try {
+      final data = await _supabaseClient.rpc(
+        'get_available_slots',
+        params: {
+          'p_court_id': courtId,
+          'p_date': date,
+        },
+      );
+      return AvailableSlotsResponse.fromJson(Map<String, dynamic>.from(data as Map));
+    } catch (e) {
+      throw ServerException(message: 'Failed to load available slots: $e');
+    }
+  }
 
-    final responseData = response.data as Map<String, dynamic>;
-    final data = responseData['data'] as Map<String, dynamic>;
-    return AvailableSlotsResponse.fromJson(data);
+  dynamic _baseCourtQuery() {
+    return _supabaseClient
+        .from('courts')
+        .select(
+          'id, name, thumbnail_url, about, material, price_per_hour, address, phone, status, '
+          'cities(id, name), court_categories(id, name), '
+          'court_images(image_url, sort_order), court_features(name)',
+        )
+        .eq('status', 'active');
+  }
+
+  Map<String, dynamic> _courtJson(Map<String, dynamic> json) {
+    final images = (json['court_images'] as List<dynamic>? ?? [])
+        .map((image) => image as Map<String, dynamic>)
+        .toList()
+      ..sort((a, b) => ((a['sort_order'] as num?)?.toInt() ?? 0)
+          .compareTo((b['sort_order'] as num?)?.toInt() ?? 0));
+    final features = (json['court_features'] as List<dynamic>? ?? [])
+        .map((feature) => feature as Map<String, dynamic>)
+        .toList();
+
+    return {
+      'id': (json['id'] as num).toInt(),
+      'name': json['name'],
+      'thumbnail': json['thumbnail_url'],
+      'photos': images.map((image) => image['image_url'] as String).toList(),
+      'about': json['about'],
+      'features': features.map((feature) => feature['name'] as String).toList(),
+      'material': json['material'],
+      'price_per_hour': (json['price_per_hour'] as num).toDouble(),
+      'price_per_hour_formatted': _formatRupiah((json['price_per_hour'] as num).toInt()),
+      'address': json['address'],
+      'phone': json['phone'],
+      'status': json['status'],
+      'bookings_this_month': 0,
+      'city': json['cities'] != null
+          ? {
+              'id': (json['cities']['id'] as num).toInt(),
+              'name': json['cities']['name'],
+            }
+          : null,
+      'category': json['court_categories'] != null
+          ? {
+              'id': (json['court_categories']['id'] as num).toInt(),
+              'name': json['court_categories']['name'],
+            }
+          : null,
+    };
+  }
+
+  String _formatRupiah(int value) {
+    final digits = value.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(digits[i]);
+    }
+    return 'Rp $buffer';
   }
 }

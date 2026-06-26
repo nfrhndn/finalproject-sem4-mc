@@ -89,6 +89,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, void>> signInWithGoogle() async {
+    try {
+      await _remoteDataSource.signInWithGoogle();
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> logout() async {
     try {
       // Call remote logout to invalidate token on server
@@ -138,7 +152,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isLoggedIn() async {
-    return await _localDataSource.isLoggedIn();
+    final hasCachedToken = await _localDataSource.isLoggedIn();
+    return hasCachedToken || _remoteDataSource.hasActiveSession();
   }
 
   @override

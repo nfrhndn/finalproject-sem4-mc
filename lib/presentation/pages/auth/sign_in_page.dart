@@ -302,7 +302,9 @@ class _SignInPageState extends State<SignInPage> {
                                     icon: Icons.g_mobiledata_rounded,
                                     label: 'Google',
                                     onTap: () {
-                                      SnackBarHelper.showInfo(context, 'Google sign in coming soon!');
+                                      context.read<AuthBloc>().add(
+                                            const AuthGoogleSignInRequested(),
+                                          );
                                     },
                                   ),
                                 ),

@@ -23,4 +23,14 @@ Run on a connected Android emulator/device:
 flutter run -d android
 ```
 
-The current app foundation is focused on Android and iOS. Supabase, Midtrans, community, and split bill features will be added in the next phase.
+Run with Supabase Cloud:
+
+```powershell
+flutter run -d android `
+  --dart-define=SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co" `
+  --dart-define=SUPABASE_ANON_KEY="YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY"
+```
+
+The current app foundation is focused on Android and iOS. Supabase core integration is scaffolded; Midtrans, community, and split bill features continue in later phases.
+
+Supabase backend setup lives in `supabase/README.md`.

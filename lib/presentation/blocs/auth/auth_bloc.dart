@@ -18,10 +18,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
     on<AuthLoginRequested>(_onAuthLoginRequested);
+    on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
     on<AuthStateReset>(_onAuthStateReset);
     on<AuthUpdateProfileRequested>(_onAuthUpdateProfileRequested);
     on<AuthChangePasswordRequested>(_onAuthChangePasswordRequested);
+  }
+
+  Future<void> _onAuthGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    final result = await _authRepository.signInWithGoogle();
+    result.fold(
+      (failure) => emit(_mapFailureToAuthError(failure)),
+      (_) => emit(const AuthUnauthenticated()),
+    );
   }
 
   /// Handle auth check on app startup

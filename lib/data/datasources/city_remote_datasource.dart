@@ -1,6 +1,6 @@
-import 'package:padalpro/core/network/api_client.dart';
-import 'package:padalpro/core/network/api_endpoints.dart';
+import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/data/models/city_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Remote data source for city operations
 abstract class CityRemoteDataSource {
@@ -13,28 +13,54 @@ abstract class CityRemoteDataSource {
 
 /// Implementation of CityRemoteDataSource using ApiClient
 class CityRemoteDataSourceImpl implements CityRemoteDataSource {
-  final ApiClient _apiClient;
+  final SupabaseClient _supabaseClient;
 
-  CityRemoteDataSourceImpl({required ApiClient apiClient})
-      : _apiClient = apiClient;
+  CityRemoteDataSourceImpl({required SupabaseClient supabaseClient})
+      : _supabaseClient = supabaseClient;
 
   @override
   Future<List<CityModel>> getCities() async {
-    final response = await _apiClient.get(ApiEndpoints.cities);
+    try {
+      final data = await _supabaseClient
+          .from('cities')
+          .select('id, name, slug, photo_url, courts:courts(count)')
+          .order('name');
 
-    final responseData = response.data as Map<String, dynamic>;
-    final citiesData = responseData['data'] as List<dynamic>;
-
-    return citiesData
-        .map((json) => CityModel.fromJson(json as Map<String, dynamic>))
-        .toList();
+      return data.map((json) => CityModel.fromJson(_cityJson(json))).toList();
+    } catch (e) {
+      throw ServerException(message: 'Failed to load cities: $e');
+    }
   }
 
   @override
   Future<CityModel> getCity(String identifier) async {
-    final response = await _apiClient.get(ApiEndpoints.cityDetails(identifier));
+    try {
+      final query = _supabaseClient
+          .from('cities')
+          .select('id, name, slug, photo_url, courts:courts(count)');
 
-    final responseData = response.data as Map<String, dynamic>;
-    return CityModel.fromJson(responseData['data'] as Map<String, dynamic>);
+      final data = int.tryParse(identifier) != null
+          ? await query.eq('id', int.parse(identifier)).single()
+          : await query.eq('slug', identifier).single();
+
+      return CityModel.fromJson(_cityJson(data));
+    } catch (e) {
+      throw ServerException(message: 'Failed to load city: $e');
+    }
+  }
+
+  Map<String, dynamic> _cityJson(Map<String, dynamic> json) {
+    final courts = json['courts'];
+    final courtsCount = courts is List && courts.isNotEmpty
+        ? (courts.first['count'] as num?)?.toInt() ?? 0
+        : 0;
+
+    return {
+      'id': (json['id'] as num).toInt(),
+      'name': json['name'],
+      'slug': json['slug'],
+      'photo_url': json['photo_url'],
+      'courts_count': courtsCount,
+    };
   }
 }
