@@ -1,24 +1,26 @@
-# finalproject-sem4-mc
+# PadalPro
 
-Flutter starter project for the Mobile Computing semester 4 final project.
+Flutter mobile app for padel court booking and community play.
 
-## Getting Started
+## Setup
 
 Install dependencies:
 
-```bash
+```powershell
 flutter pub get
-```
-
-Run the app:
-
-```bash
-flutter run
 ```
 
 Run checks:
 
-```bash
+```powershell
 flutter analyze
 flutter test
 ```
+
+Run on a connected Android emulator/device:
+
+```powershell
+flutter run -d android
+```
+
+The current app foundation is focused on Android and iOS. Supabase, Midtrans, community, and split bill features will be added in the next phase.
