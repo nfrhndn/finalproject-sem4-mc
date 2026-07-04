@@ -12,6 +12,10 @@
 .swiftpm/
 migrate_working_dir/
 mobile/
+.codex-run/
+.env
+.env.*
+*.local.ps1
 
 # IntelliJ related
 *.iml

@@ -1,6 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:padalpro/core/network/api_client.dart';
 import 'package:padalpro/data/datasources/auth_local_datasource.dart';
 import 'package:padalpro/data/datasources/auth_remote_datasource.dart';
 import 'package:padalpro/data/datasources/booking_remote_datasource.dart';
@@ -34,12 +33,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<FlutterSecureStorage>(() => secureStorage);
 
   // ==================== Core ====================
-  sl.registerLazySingleton<ApiClient>(
-    () => ApiClient(secureStorage: sl<FlutterSecureStorage>()),
-  );
-  sl.registerLazySingleton<SupabaseClient>(
-    () => Supabase.instance.client,
-  );
+  sl.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
   // ==================== Data Sources ====================
   // Auth Remote
@@ -81,21 +75,16 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerLazySingleton<CityRepository>(
-    () => CityRepositoryImpl(
-      remoteDataSource: sl<CityRemoteDataSource>(),
-    ),
+    () => CityRepositoryImpl(remoteDataSource: sl<CityRemoteDataSource>()),
   );
 
   sl.registerLazySingleton<CourtRepository>(
-    () => CourtRepositoryImpl(
-      remoteDataSource: sl<CourtRemoteDataSource>(),
-    ),
+    () => CourtRepositoryImpl(remoteDataSource: sl<CourtRemoteDataSource>()),
   );
 
   sl.registerLazySingleton<BookingRepository>(
-    () => BookingRepositoryImpl(
-      remoteDataSource: sl<BookingRemoteDataSource>(),
-    ),
+    () =>
+        BookingRepositoryImpl(remoteDataSource: sl<BookingRemoteDataSource>()),
   );
 
   // ==================== BLoCs ====================

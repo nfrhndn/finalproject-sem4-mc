@@ -11,12 +11,12 @@ abstract class CityRemoteDataSource {
   Future<CityModel> getCity(String identifier);
 }
 
-/// Implementation of CityRemoteDataSource using ApiClient
+/// Implementation of CityRemoteDataSource using Supabase.
 class CityRemoteDataSourceImpl implements CityRemoteDataSource {
   final SupabaseClient _supabaseClient;
 
   CityRemoteDataSourceImpl({required SupabaseClient supabaseClient})
-      : _supabaseClient = supabaseClient;
+    : _supabaseClient = supabaseClient;
 
   @override
   Future<List<CityModel>> getCities() async {
