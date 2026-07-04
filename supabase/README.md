@@ -19,25 +19,28 @@ flutter run -d android `
 
 ## 2. Run Database SQL
 
-Open Supabase SQL Editor and run:
+Open Supabase SQL Editor and run every file in `supabase/migrations` in
+timestamp order, then run the seed file:
 
 1. `supabase/migrations/202606260001_initial_core_booking.sql`
-2. `supabase/seed.sql`
+2. `supabase/migrations/202607030001_core_booking_status_and_tax_fixups.sql`
+3. `supabase/seed.sql`
 
-The migration creates core booking tables, RLS policies, profile triggers, storage buckets, and booking RPCs.
+The migrations create core booking tables, RLS policies, profile triggers,
+storage buckets, booking RPCs, expired booking cleanup, and tax calculation.
 
 ## 3. Configure Auth
 
-Enable Email/Password in Supabase Auth.
-
-For Google SSO:
-
-- Enable Google provider in Supabase Auth.
-- Add this redirect URL in Supabase Auth URL configuration:
+Enable Email/Password in Supabase Auth. In Auth URL Configuration, add this
+mobile redirect URL for email confirmation and OAuth callbacks:
 
 ```text
 com.padalpro.app://login-callback/
 ```
+
+For Google SSO:
+
+- Enable Google provider in Supabase Auth.
 
 Android and iOS are already configured to receive that callback.
 
