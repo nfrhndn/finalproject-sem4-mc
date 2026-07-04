@@ -12,7 +12,7 @@ class BookingRepositoryImpl implements BookingRepository {
   final BookingRemoteDataSource _remoteDataSource;
 
   BookingRepositoryImpl({required BookingRemoteDataSource remoteDataSource})
-      : _remoteDataSource = remoteDataSource;
+    : _remoteDataSource = remoteDataSource;
 
   @override
   Future<Either<Failure, List<Booking>>> getMyBookings({String? status}) async {
@@ -23,6 +23,8 @@ class BookingRepositoryImpl implements BookingRepository {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
     } catch (e) {
       return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
@@ -37,6 +39,8 @@ class BookingRepositoryImpl implements BookingRepository {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
     } catch (e) {
       return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
@@ -61,6 +65,8 @@ class BookingRepositoryImpl implements BookingRepository {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
     } catch (e) {
       return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
@@ -81,6 +87,8 @@ class BookingRepositoryImpl implements BookingRepository {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
     } catch (e) {
       return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
@@ -95,6 +103,8 @@ class BookingRepositoryImpl implements BookingRepository {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
     } catch (e) {
       return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }

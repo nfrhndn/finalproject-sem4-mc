@@ -11,10 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 class BookingDetailsPage extends StatelessWidget {
   final int bookingId;
 
-  const BookingDetailsPage({
-    super.key,
-    required this.bookingId,
-  });
+  const BookingDetailsPage({super.key, required this.bookingId});
 
   // Default court image fallback
   static const String _defaultCourtImage =
@@ -47,7 +44,9 @@ class BookingDetailsPage extends StatelessWidget {
 
     try {
       // Parse date (format: "2026-01-16") and endTime (format: "21:00")
-      final endDateTime = DateTime.parse('${booking.date} ${booking.endTime}:00');
+      final endDateTime = DateTime.parse(
+        '${booking.date} ${booking.endTime}:00',
+      );
       return DateTime.now().isAfter(endDateTime);
     } catch (_) {
       return false;
@@ -59,8 +58,11 @@ class BookingDetailsPage extends StatelessWidget {
       return _isCompleted(booking) ? 'Completed' : 'Upcoming';
     }
     switch (booking.status) {
-      case 'pending':
+      case 'pending_payment':
         return 'Pending';
+      case 'expired':
+        return 'Expired';
+      case 'cancelled':
       case 'failed':
         return 'Cancelled';
       default:
@@ -72,8 +74,12 @@ class BookingDetailsPage extends StatelessWidget {
     switch (status) {
       case 'paid':
         return 'Paid';
-      case 'pending':
+      case 'pending_payment':
         return 'Pending';
+      case 'expired':
+        return 'Expired';
+      case 'cancelled':
+        return 'Cancelled';
       case 'failed':
         return 'Failed';
       default:
@@ -94,7 +100,11 @@ class BookingDetailsPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 64, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Booking not found',
@@ -158,10 +168,24 @@ class BookingDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, String paymentStatus, bool isCompleted) {
+  Widget _buildHeader(
+    BuildContext context,
+    String paymentStatus,
+    bool isCompleted,
+  ) {
+    final isPaid = paymentStatus == 'Paid';
+    final isPaymentStopped =
+        paymentStatus == 'Failed' ||
+        paymentStatus == 'Expired' ||
+        paymentStatus == 'Cancelled';
+
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, MediaQuery.of(context).padding.top + 16, 20, 24),
+        20,
+        MediaQuery.of(context).padding.top + 16,
+        20,
+        24,
+      ),
       child: Column(
         children: [
           // Back button row with centered title
@@ -210,8 +234,11 @@ class BookingDetailsPage extends StatelessWidget {
                       color: AppColors.textPrimary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check_rounded,
-                        color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -237,31 +264,42 @@ class BookingDetailsPage extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: paymentStatus == 'Paid'
+                      color: isPaid
                           ? AppColors.textPrimary
-                          : paymentStatus == 'Failed'
-                              ? AppColors.error
-                              : AppColors.textPrimary.withValues(alpha: 0.1),
+                          : isPaymentStopped
+                          ? AppColors.error
+                          : AppColors.textPrimary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
-                      border: paymentStatus == 'Paid' || paymentStatus == 'Failed'
+                      border: isPaid || isPaymentStopped
                           ? null
                           : Border.all(color: AppColors.textPrimary, width: 2),
                     ),
-                    child: paymentStatus == 'Paid'
-                        ? const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 20)
-                        : paymentStatus == 'Failed'
-                            ? const Icon(Icons.close_rounded,
-                                color: Colors.white, size: 20)
-                            : const Icon(Icons.access_time_rounded,
-                                color: AppColors.textPrimary, size: 18),
+                    child: isPaid
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : isPaymentStopped
+                        ? const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : const Icon(
+                            Icons.access_time_rounded,
+                            color: AppColors.textPrimary,
+                            size: 18,
+                          ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Payment',
                     style: AppTextStyles.captionSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: paymentStatus == 'Failed' ? AppColors.error : AppColors.textPrimary,
+                      color: isPaymentStopped
+                          ? AppColors.error
+                          : AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -271,11 +309,11 @@ class BookingDetailsPage extends StatelessWidget {
                 width: 50,
                 height: 2,
                 margin: const EdgeInsets.only(bottom: 20, left: 8, right: 8),
-                color: isCompleted || paymentStatus == 'Paid'
+                color: isCompleted || isPaid
                     ? AppColors.textPrimary
-                    : paymentStatus == 'Failed'
-                        ? AppColors.error.withValues(alpha: 0.3)
-                        : AppColors.textSecondary.withValues(alpha: 0.3),
+                    : isPaymentStopped
+                    ? AppColors.error.withValues(alpha: 0.3)
+                    : AppColors.textSecondary.withValues(alpha: 0.3),
               ),
               // Step 3 - Playing (completed if done, active if Paid, cancelled if Failed)
               Column(
@@ -286,31 +324,38 @@ class BookingDetailsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isCompleted
                           ? AppColors.textPrimary
-                          : paymentStatus == 'Paid'
-                              ? AppColors.textPrimary.withValues(alpha: 0.1)
-                              : Colors.transparent,
+                          : isPaid
+                          ? AppColors.textPrimary.withValues(alpha: 0.1)
+                          : Colors.transparent,
                       shape: BoxShape.circle,
                       border: isCompleted
                           ? null
                           : Border.all(
-                              color: paymentStatus == 'Paid'
+                              color: isPaid
                                   ? AppColors.textPrimary
-                                  : paymentStatus == 'Failed'
-                                      ? AppColors.error.withValues(alpha: 0.3)
-                                      : AppColors.textSecondary.withValues(alpha: 0.3),
+                                  : isPaymentStopped
+                                  ? AppColors.error.withValues(alpha: 0.3)
+                                  : AppColors.textSecondary.withValues(
+                                      alpha: 0.3,
+                                    ),
                               width: 2,
                             ),
                     ),
                     child: isCompleted
-                        ? const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 20)
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          )
                         : Icon(
                             Icons.sports_tennis_rounded,
-                            color: paymentStatus == 'Paid'
+                            color: isPaid
                                 ? AppColors.textPrimary
-                                : paymentStatus == 'Failed'
-                                    ? AppColors.error.withValues(alpha: 0.5)
-                                    : AppColors.textSecondary.withValues(alpha: 0.5),
+                                : isPaymentStopped
+                                ? AppColors.error.withValues(alpha: 0.5)
+                                : AppColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                             size: 18,
                           ),
                   ),
@@ -319,11 +364,11 @@ class BookingDetailsPage extends StatelessWidget {
                     isCompleted ? 'Completed' : 'Playing',
                     style: AppTextStyles.captionSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isCompleted || paymentStatus == 'Paid'
+                      color: isCompleted || isPaid
                           ? AppColors.textPrimary
-                          : paymentStatus == 'Failed'
-                              ? AppColors.error.withValues(alpha: 0.5)
-                              : AppColors.textSecondary,
+                          : isPaymentStopped
+                          ? AppColors.error.withValues(alpha: 0.5)
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -382,7 +427,8 @@ class BookingDetailsPage extends StatelessWidget {
                             height: 90,
                             color: Colors.grey[300],
                             child: const Icon(
-                                Icons.image_not_supported_outlined),
+                              Icons.image_not_supported_outlined,
+                            ),
                           );
                         },
                       ),
@@ -403,8 +449,11 @@ class BookingDetailsPage extends StatelessWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_outlined,
-                                  size: 14, color: AppColors.textSecondary),
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -427,10 +476,7 @@ class BookingDetailsPage extends StatelessWidget {
                                 color: AppColors.textSecondary,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                categoryName,
-                                style: AppTextStyles.body,
-                              ),
+                              Text(categoryName, style: AppTextStyles.body),
                             ],
                           ),
                         ],
@@ -455,44 +501,63 @@ class BookingDetailsPage extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                        child: _buildDetailRow(Icons.calendar_today_rounded,
-                            'Date', _formatFullDate(booking.date))),
+                      child: _buildDetailRow(
+                        Icons.calendar_today_rounded,
+                        'Date',
+                        _formatFullDate(booking.date),
+                      ),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
-                        child: _buildDetailRow(Icons.schedule_rounded,
-                            'Duration', '${booking.totalHours} hours')),
+                      child: _buildDetailRow(
+                        Icons.schedule_rounded,
+                        'Duration',
+                        '${booking.totalHours} hours',
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 _buildDetailRow(
-                    Icons.access_time_rounded, 'Time', booking.timeSlot),
+                  Icons.access_time_rounded,
+                  'Time',
+                  booking.timeSlot,
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: _buildDetailRow(Icons.confirmation_number_rounded,
-                          'Booking ID', '#${booking.id}'),
+                      child: _buildDetailRow(
+                        Icons.confirmation_number_rounded,
+                        'Booking ID',
+                        '#${booking.id}',
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: (statusLabel == 'Upcoming' || statusLabel == 'Completed')
+                        color:
+                            (statusLabel == 'Upcoming' ||
+                                statusLabel == 'Completed')
                             ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
                             : statusLabel == 'Cancelled'
-                                ? AppColors.error.withValues(alpha: 0.1)
-                                : const Color(0xFFFF9800)
-                                    .withValues(alpha: 0.1),
+                            ? AppColors.error.withValues(alpha: 0.1)
+                            : const Color(0xFFFF9800).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
                         statusLabel,
                         style: AppTextStyles.captionSemibold.copyWith(
-                          color: (statusLabel == 'Upcoming' || statusLabel == 'Completed')
+                          color:
+                              (statusLabel == 'Upcoming' ||
+                                  statusLabel == 'Completed')
                               ? const Color(0xFF4CAF50)
                               : statusLabel == 'Cancelled'
-                                  ? AppColors.error
-                                  : const Color(0xFFFF9800),
+                              ? AppColors.error
+                              : const Color(0xFFFF9800),
                         ),
                       ),
                     ),
@@ -519,8 +584,11 @@ class BookingDetailsPage extends StatelessWidget {
                 const SizedBox(height: 10),
                 _buildPaymentRow('Tax (11%)', booking.taxAmount),
                 const SizedBox(height: 10),
-                _buildPaymentRow('Total Payment', booking.grandTotal,
-                    isTotal: true),
+                _buildPaymentRow(
+                  'Total Payment',
+                  booking.grandTotal,
+                  isTotal: true,
+                ),
 
                 const SizedBox(height: 24),
 
@@ -535,8 +603,9 @@ class BookingDetailsPage extends StatelessWidget {
                         flex: index % 4 == 0 ? 3 : (index % 3 == 0 ? 2 : 1),
                         child: Container(
                           height: 50,
-                          color:
-                              index % 2 == 0 ? AppColors.textPrimary : Colors.transparent,
+                          color: index % 2 == 0
+                              ? AppColors.textPrimary
+                              : Colors.transparent,
                         ),
                       ),
                     ),
@@ -612,10 +681,7 @@ class BookingDetailsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: AppTextStyles.captionSmall,
-              ),
+              Text(label, style: AppTextStyles.captionSmall),
               const SizedBox(height: 2),
               Text(
                 value,
@@ -637,7 +703,9 @@ class BookingDetailsPage extends StatelessWidget {
         Text(
           label,
           style: isTotal
-              ? AppTextStyles.bodyLargeSemibold.copyWith(fontWeight: FontWeight.w700)
+              ? AppTextStyles.bodyLargeSemibold.copyWith(
+                  fontWeight: FontWeight.w700,
+                )
               : AppTextStyles.body,
         ),
         Text(
@@ -686,8 +754,11 @@ class BookingDetailsPage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.share_rounded,
-                        color: Colors.white, size: 20),
+                    const Icon(
+                      Icons.share_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Share',
@@ -704,24 +775,34 @@ class BookingDetailsPage extends StatelessWidget {
               onTap: hasPhone
                   ? () => _makePhoneCall(phone)
                   : () => SnackBarHelper.showInfo(
-                      context, 'Phone number not available'),
+                      context,
+                      'Phone number not available',
+                    ),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: hasPhone ? AppColors.primary : AppColors.primary.withValues(alpha: 0.5),
+                  color: hasPhone
+                      ? AppColors.primary
+                      : AppColors.primary.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.phone_rounded,
-                        color: hasPhone ? AppColors.textPrimary : AppColors.textPrimary.withValues(alpha: 0.5),
-                        size: 20),
+                    Icon(
+                      Icons.phone_rounded,
+                      color: hasPhone
+                          ? AppColors.textPrimary
+                          : AppColors.textPrimary.withValues(alpha: 0.5),
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Call Manager',
                       style: AppTextStyles.buttonMedium.copyWith(
-                        color: hasPhone ? AppColors.textPrimary : AppColors.textPrimary.withValues(alpha: 0.5),
+                        color: hasPhone
+                            ? AppColors.textPrimary
+                            : AppColors.textPrimary.withValues(alpha: 0.5),
                       ),
                     ),
                   ],

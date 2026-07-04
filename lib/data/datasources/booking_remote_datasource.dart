@@ -54,23 +54,25 @@ abstract class BookingRemoteDataSource {
   Future<void> cancelBooking(int bookingId);
 }
 
-/// Implementation of BookingRemoteDataSource using ApiClient
+/// Implementation of BookingRemoteDataSource using Supabase.
 class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   final SupabaseClient _supabaseClient;
 
   BookingRemoteDataSourceImpl({required SupabaseClient supabaseClient})
-      : _supabaseClient = supabaseClient;
+    : _supabaseClient = supabaseClient;
 
   @override
   Future<List<BookingModel>> getMyBookings({String? status}) async {
-    try {
-      var query = _baseBookingQuery();
-      if (status != null) {
-        query = query.eq('status', status);
-      }
+    if (_supabaseClient.auth.currentUser == null) {
+      return [];
+    }
 
-      final data = await query.order('booking_date', ascending: false).order('start_hour');
-      return data.map((booking) => BookingModel.fromJson(_bookingJson(booking))).toList();
+    try {
+      final data = await _baseBookingQuery()
+          .order('booking_date', ascending: false)
+          .order('start_hour');
+      final bookings = await _hydrateBookingModels(data);
+      return _filterBookings(bookings, status);
     } catch (e) {
       throw ServerException(message: 'Failed to load bookings: $e');
     }
@@ -78,6 +80,10 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
   @override
   Future<BookingModel?> getNextBooking() async {
+    if (_supabaseClient.auth.currentUser == null) {
+      return null;
+    }
+
     try {
       final data = await _baseBookingQuery()
           .gte('booking_date', DateFormat('yyyy-MM-dd').format(DateTime.now()))
@@ -88,7 +94,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
           .maybeSingle();
 
       if (data == null) return null;
-      return BookingModel.fromJson(_bookingJson(data));
+      final bookings = await _hydrateBookingModels([data]);
+      return bookings.isEmpty ? null : bookings.first;
     } catch (e) {
       throw ServerException(message: 'Failed to load next booking: $e');
     }
@@ -101,6 +108,12 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     required int startHour,
     required int endHour,
   }) async {
+    if (_supabaseClient.auth.currentUser == null) {
+      throw const AuthException(
+        message: 'Please sign in before booking a court',
+      );
+    }
+
     try {
       final data = await _supabaseClient.rpc(
         'create_booking',
@@ -112,7 +125,9 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         },
       );
 
-      return CreateBookingResponse.fromJson(Map<String, dynamic>.from(data as Map));
+      return CreateBookingResponse.fromJson(_asStringKeyMap(data));
+    } on AuthException {
+      rethrow;
     } catch (e) {
       throw ServerException(message: 'Failed to create booking: $e');
     }
@@ -132,7 +147,9 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       final extension = proofOfPayment.path.split('.').last;
       final objectPath =
           '$userId/$bookingId-${DateTime.now().millisecondsSinceEpoch}.$extension';
-      await _supabaseClient.storage.from('payment-proofs').upload(
+      await _supabaseClient.storage
+          .from('payment-proofs')
+          .upload(
             objectPath,
             proofOfPayment,
             fileOptions: const FileOptions(upsert: true),
@@ -149,14 +166,21 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         'booking_id': bookingId,
         'user_id': userId,
         'provider': 'manual',
-        'provider_order_id': 'MANUAL-$bookingId-${DateTime.now().millisecondsSinceEpoch}',
+        'provider_order_id':
+            'MANUAL-$bookingId-${DateTime.now().millisecondsSinceEpoch}',
         'amount': booking['grand_total'],
         'status': 'settlement',
         'raw_payload': {'proof_path': objectPath},
       });
 
-      final refreshedBooking = await _baseBookingQuery().eq('id', bookingId).single();
-      return BookingModel.fromJson(_bookingJson(refreshedBooking));
+      final refreshedBooking = await _baseBookingQuery()
+          .eq('id', bookingId)
+          .single();
+      final bookings = await _hydrateBookingModels([refreshedBooking]);
+      if (bookings.isEmpty) {
+        throw const ServerException(message: 'Booking not found');
+      }
+      return bookings.first;
     } on AuthException {
       rethrow;
     } catch (e) {
@@ -177,19 +201,95 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   }
 
   dynamic _baseBookingQuery() {
-    return _supabaseClient.from('bookings').select(
-          'id, booking_date, start_hour, end_hour, total_hours, price_per_hour, '
-          'sub_total, tax_amount, grand_total, status, created_at, '
-          'courts(id, name, thumbnail_url, material, address, phone, '
-          'cities(id, name), court_categories(id, name))',
+    return _supabaseClient
+        .from('bookings')
+        .select(
+          'id, court_id, booking_date, start_hour, end_hour, total_hours, price_per_hour, '
+          'sub_total, tax_amount, grand_total, status, created_at',
         );
+  }
+
+  Future<List<BookingModel>> _hydrateBookingModels(dynamic data) async {
+    final bookings = _asList(data).map(_asStringKeyMap).toList();
+    if (bookings.isEmpty) return [];
+
+    final courtIds = bookings
+        .map((booking) => booking['court_id'])
+        .whereType<num>()
+        .map((id) => id.toInt())
+        .toSet();
+    final courtRows = courtIds.isEmpty
+        ? <dynamic>[]
+        : await _supabaseClient
+              .from('courts')
+              .select(
+                'id, city_id, category_id, name, thumbnail_url, material, address, phone',
+              )
+              .filter('id', 'in', _inExpression(courtIds));
+
+    final courts = _asList(courtRows).map(_asStringKeyMap).toList();
+    final cityIds = courts
+        .map((court) => court['city_id'])
+        .whereType<num>()
+        .map((id) => id.toInt())
+        .toSet();
+    final categoryIds = courts
+        .map((court) => court['category_id'])
+        .whereType<num>()
+        .map((id) => id.toInt())
+        .toSet();
+
+    final cityRows = cityIds.isEmpty
+        ? <dynamic>[]
+        : await _supabaseClient
+              .from('cities')
+              .select('id, name')
+              .filter('id', 'in', _inExpression(cityIds));
+    final categoryRows = categoryIds.isEmpty
+        ? <dynamic>[]
+        : await _supabaseClient
+              .from('court_categories')
+              .select('id, name')
+              .filter('id', 'in', _inExpression(categoryIds));
+
+    final citiesById = {
+      for (final row in _asList(cityRows).map(_asStringKeyMap))
+        (row['id'] as num).toInt(): row,
+    };
+    final categoriesById = {
+      for (final row in _asList(categoryRows).map(_asStringKeyMap))
+        (row['id'] as num).toInt(): row,
+    };
+    final courtsById = <int, Map<String, dynamic>>{};
+    for (final court in courts) {
+      final courtId = (court['id'] as num).toInt();
+      final cityId = (court['city_id'] as num?)?.toInt();
+      final categoryId = (court['category_id'] as num?)?.toInt();
+      courtsById[courtId] = {
+        ...court,
+        'cities': cityId != null ? citiesById[cityId] : null,
+        'court_categories': categoryId != null
+            ? categoriesById[categoryId]
+            : null,
+      };
+    }
+
+    return bookings.map((booking) {
+      final courtId = (booking['court_id'] as num?)?.toInt();
+      return BookingModel.fromJson(
+        _bookingJson({
+          ...booking,
+          'courts': courtId != null ? courtsById[courtId] : null,
+        }),
+      );
+    }).toList();
   }
 
   Map<String, dynamic> _bookingJson(Map<String, dynamic> json) {
     final date = DateTime.parse(json['booking_date'] as String);
     final startHour = (json['start_hour'] as num).toInt();
     final endHour = (json['end_hour'] as num).toInt();
-    final court = json['courts'] as Map<String, dynamic>;
+    final court = json['courts'] as Map<String, dynamic>? ?? {};
 
     return {
       'id': (json['id'] as num).toInt(),
@@ -204,14 +304,16 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       'sub_total': (json['sub_total'] as num).toInt(),
       'tax_amount': (json['tax_amount'] as num).toInt(),
       'grand_total': (json['grand_total'] as num).toInt(),
-      'grand_total_formatted': _formatRupiah((json['grand_total'] as num).toInt()),
+      'grand_total_formatted': _formatRupiah(
+        (json['grand_total'] as num).toInt(),
+      ),
       'status': json['status'],
       'court': {
-        'id': (court['id'] as num).toInt(),
-        'name': court['name'],
+        'id': (court['id'] as num?)?.toInt() ?? 0,
+        'name': court['name'] ?? 'Unknown Court',
         'thumbnail': court['thumbnail_url'],
-        'material': court['material'],
-        'address': court['address'],
+        'material': court['material'] ?? '-',
+        'address': court['address'] ?? '-',
         'phone': court['phone'],
         'city': court['cities'] != null
             ? {
@@ -240,5 +342,53 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
       buffer.write(digits[i]);
     }
     return 'Rp $buffer';
+  }
+
+  List<BookingModel> _filterBookings(
+    List<BookingModel> bookings,
+    String? filter,
+  ) {
+    if (filter == null) return bookings;
+
+    final now = DateTime.now();
+    return bookings.where((booking) {
+      return switch (filter) {
+        'upcoming' =>
+          booking.status == 'paid' && !_hasBookingEnded(booking, now),
+        'pending' => booking.status == 'pending_payment',
+        'completed' =>
+          booking.status == 'paid' && _hasBookingEnded(booking, now),
+        'cancelled' =>
+          booking.status == 'cancelled' ||
+              booking.status == 'expired' ||
+              booking.status == 'failed',
+        _ => booking.status == filter,
+      };
+    }).toList();
+  }
+
+  bool _hasBookingEnded(BookingModel booking, DateTime now) {
+    final date = DateTime.tryParse(booking.date);
+    if (date == null) return false;
+
+    final endHour = int.tryParse(booking.endTime.split(':').first) ?? 0;
+    final endDateTime = DateTime(date.year, date.month, date.day, endHour);
+    return now.isAfter(endDateTime);
+  }
+
+  Map<String, dynamic> _asStringKeyMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    throw ServerException(message: 'Unexpected Supabase response: $value');
+  }
+
+  List<dynamic> _asList(dynamic value) {
+    if (value is List<dynamic>) return value;
+    if (value is List) return List<dynamic>.from(value);
+    throw ServerException(message: 'Unexpected Supabase response: $value');
+  }
+
+  String _inExpression(Iterable<int> ids) {
+    return '(${ids.join(',')})';
   }
 }

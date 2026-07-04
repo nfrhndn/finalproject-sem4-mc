@@ -7,10 +7,7 @@ class TimeSlotModel {
   final String time;
   final bool available;
 
-  const TimeSlotModel({
-    required this.time,
-    required this.available,
-  });
+  const TimeSlotModel({required this.time, required this.available});
 
   factory TimeSlotModel.fromJson(Map<String, dynamic> json) {
     return TimeSlotModel(
@@ -39,7 +36,7 @@ class AvailableSlotsResponse {
   factory AvailableSlotsResponse.fromJson(Map<String, dynamic> json) {
     final slotsData = json['slots'] as List<dynamic>;
     return AvailableSlotsResponse(
-      courtId: json['court_id'] as int,
+      courtId: (json['court_id'] as num).toInt(),
       courtName: json['court_name'] as String,
       date: json['date'] as String,
       pricePerHour: (json['price_per_hour'] is String)
@@ -116,12 +113,12 @@ abstract class CourtRemoteDataSource {
   Future<AvailableSlotsResponse> getAvailableSlots(int courtId, String date);
 }
 
-/// Implementation of CourtRemoteDataSource using ApiClient
+/// Implementation of CourtRemoteDataSource using Supabase.
 class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
   final SupabaseClient _supabaseClient;
 
   CourtRemoteDataSourceImpl({required SupabaseClient supabaseClient})
-      : _supabaseClient = supabaseClient;
+    : _supabaseClient = supabaseClient;
 
   @override
   Future<List<CourtModel>> getFeaturedCourts({int? limit}) async {
@@ -131,7 +128,7 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
         query = query.limit(limit);
       }
       final data = await query;
-      return data.map((json) => CourtModel.fromJson(_courtJson(json))).toList();
+      return _hydrateCourtModels(data);
     } catch (e) {
       throw ServerException(message: 'Failed to load featured courts: $e');
     }
@@ -145,7 +142,7 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
         query = query.limit(limit);
       }
       final data = await query;
-      return data.map((json) => CourtModel.fromJson(_courtJson(json))).toList();
+      return _hydrateCourtModels(data);
     } catch (e) {
       throw ServerException(message: 'Failed to load popular courts: $e');
     }
@@ -167,7 +164,9 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
       if (cityId != null) query = query.eq('city_id', cityId);
       if (categoryId != null) query = query.eq('category_id', categoryId);
       if (material != null) query = query.eq('material', material);
-      if (search != null && search.isNotEmpty) query = query.ilike('name', '%$search%');
+      if (search != null && search.isNotEmpty) {
+        query = query.ilike('name', '%$search%');
+      }
       if (minPrice != null) query = query.gte('price_per_hour', minPrice);
       if (maxPrice != null) query = query.lte('price_per_hour', maxPrice);
 
@@ -176,7 +175,7 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
       final int from = (currentPage - 1) * pageSize;
       final int to = from + pageSize - 1;
       final data = await query.order('id').range(from, to);
-      final courts = data.map((json) => CourtModel.fromJson(_courtJson(json))).toList();
+      final courts = await _hydrateCourtModels(data);
 
       return PaginatedCourtsResponse(
         courts: courts,
@@ -196,23 +195,27 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
   Future<CourtModel> getCourtDetails(int id) async {
     try {
       final data = await _baseCourtQuery().eq('id', id).single();
-      return CourtModel.fromJson(_courtJson(data));
+      final courts = await _hydrateCourtModels([data]);
+      if (courts.isEmpty) {
+        throw const ServerException(message: 'Court not found');
+      }
+      return courts.first;
     } catch (e) {
       throw ServerException(message: 'Failed to load court details: $e');
     }
   }
 
   @override
-  Future<AvailableSlotsResponse> getAvailableSlots(int courtId, String date) async {
+  Future<AvailableSlotsResponse> getAvailableSlots(
+    int courtId,
+    String date,
+  ) async {
     try {
       final data = await _supabaseClient.rpc(
         'get_available_slots',
-        params: {
-          'p_court_id': courtId,
-          'p_date': date,
-        },
+        params: {'p_court_id': courtId, 'p_date': date},
       );
-      return AvailableSlotsResponse.fromJson(Map<String, dynamic>.from(data as Map));
+      return AvailableSlotsResponse.fromJson(_asStringKeyMap(data));
     } catch (e) {
       throw ServerException(message: 'Failed to load available slots: $e');
     }
@@ -222,19 +225,102 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
     return _supabaseClient
         .from('courts')
         .select(
-          'id, name, thumbnail_url, about, material, price_per_hour, address, phone, status, '
-          'cities(id, name), court_categories(id, name), '
-          'court_images(image_url, sort_order), court_features(name)',
+          'id, city_id, category_id, name, thumbnail_url, about, material, '
+          'price_per_hour, address, phone, status, is_featured',
         )
         .eq('status', 'active');
   }
 
+  Future<List<CourtModel>> _hydrateCourtModels(dynamic data) async {
+    final courts = _asList(data).map(_asStringKeyMap).toList();
+    if (courts.isEmpty) return [];
+
+    final courtIds = courts
+        .map((court) => (court['id'] as num).toInt())
+        .toSet();
+    final cityIds = courts
+        .map((court) => court['city_id'])
+        .whereType<num>()
+        .map((id) => id.toInt())
+        .toSet();
+    final categoryIds = courts
+        .map((court) => court['category_id'])
+        .whereType<num>()
+        .map((id) => id.toInt())
+        .toSet();
+
+    final cityRows = cityIds.isEmpty
+        ? <dynamic>[]
+        : await _supabaseClient
+              .from('cities')
+              .select('id, name')
+              .filter('id', 'in', _inExpression(cityIds));
+    final categoryRows = categoryIds.isEmpty
+        ? <dynamic>[]
+        : await _supabaseClient
+              .from('court_categories')
+              .select('id, name')
+              .filter('id', 'in', _inExpression(categoryIds));
+    final imageRows = await _supabaseClient
+        .from('court_images')
+        .select('court_id, image_url, sort_order')
+        .filter('court_id', 'in', _inExpression(courtIds))
+        .order('sort_order')
+        .order('id');
+    final featureRows = await _supabaseClient
+        .from('court_features')
+        .select('court_id, name')
+        .filter('court_id', 'in', _inExpression(courtIds))
+        .order('id');
+
+    final citiesById = {
+      for (final row in _asList(cityRows).map(_asStringKeyMap))
+        (row['id'] as num).toInt(): row,
+    };
+    final categoriesById = {
+      for (final row in _asList(categoryRows).map(_asStringKeyMap))
+        (row['id'] as num).toInt(): row,
+    };
+    final imagesByCourtId = <int, List<Map<String, dynamic>>>{};
+    for (final row in _asList(imageRows).map(_asStringKeyMap)) {
+      final courtId = (row['court_id'] as num).toInt();
+      imagesByCourtId.putIfAbsent(courtId, () => []).add(row);
+    }
+    final featuresByCourtId = <int, List<Map<String, dynamic>>>{};
+    for (final row in _asList(featureRows).map(_asStringKeyMap)) {
+      final courtId = (row['court_id'] as num).toInt();
+      featuresByCourtId.putIfAbsent(courtId, () => []).add(row);
+    }
+
+    return courts.map((court) {
+      final courtId = (court['id'] as num).toInt();
+      final cityId = (court['city_id'] as num?)?.toInt();
+      final categoryId = (court['category_id'] as num?)?.toInt();
+
+      return CourtModel.fromJson(
+        _courtJson({
+          ...court,
+          'cities': cityId != null ? citiesById[cityId] : null,
+          'court_categories': categoryId != null
+              ? categoriesById[categoryId]
+              : null,
+          'court_images': imagesByCourtId[courtId] ?? [],
+          'court_features': featuresByCourtId[courtId] ?? [],
+        }),
+      );
+    }).toList();
+  }
+
   Map<String, dynamic> _courtJson(Map<String, dynamic> json) {
-    final images = (json['court_images'] as List<dynamic>? ?? [])
-        .map((image) => image as Map<String, dynamic>)
-        .toList()
-      ..sort((a, b) => ((a['sort_order'] as num?)?.toInt() ?? 0)
-          .compareTo((b['sort_order'] as num?)?.toInt() ?? 0));
+    final images =
+        (json['court_images'] as List<dynamic>? ?? [])
+            .map((image) => image as Map<String, dynamic>)
+            .toList()
+          ..sort(
+            (a, b) => ((a['sort_order'] as num?)?.toInt() ?? 0).compareTo(
+              (b['sort_order'] as num?)?.toInt() ?? 0,
+            ),
+          );
     final features = (json['court_features'] as List<dynamic>? ?? [])
         .map((feature) => feature as Map<String, dynamic>)
         .toList();
@@ -248,7 +334,9 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
       'features': features.map((feature) => feature['name'] as String).toList(),
       'material': json['material'],
       'price_per_hour': (json['price_per_hour'] as num).toDouble(),
-      'price_per_hour_formatted': _formatRupiah((json['price_per_hour'] as num).toInt()),
+      'price_per_hour_formatted': _formatRupiah(
+        (json['price_per_hour'] as num).toInt(),
+      ),
       'address': json['address'],
       'phone': json['phone'],
       'status': json['status'],
@@ -278,5 +366,21 @@ class CourtRemoteDataSourceImpl implements CourtRemoteDataSource {
       buffer.write(digits[i]);
     }
     return 'Rp $buffer';
+  }
+
+  Map<String, dynamic> _asStringKeyMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    throw ServerException(message: 'Unexpected Supabase response: $value');
+  }
+
+  List<dynamic> _asList(dynamic value) {
+    if (value is List<dynamic>) return value;
+    if (value is List) return List<dynamic>.from(value);
+    throw ServerException(message: 'Unexpected Supabase response: $value');
+  }
+
+  String _inExpression(Iterable<int> ids) {
+    return '(${ids.join(',')})';
   }
 }

@@ -25,7 +25,8 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   String _selectedTab = 'Upcoming';
 
   // Default court image fallback
-  static const String _defaultCourtImage = 'https://plus.unsplash.com/premium_photo-1723924861073-5764741be57c?w=1200';
+  static const String _defaultCourtImage =
+      'https://plus.unsplash.com/premium_photo-1723924861073-5764741be57c?w=1200';
 
   final List<String> _tabs = ['Upcoming', 'Pending', 'Completed', 'Cancelled'];
 
@@ -65,8 +66,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     switch (bookingStatus) {
       case 'paid':
         return 'Paid';
-      case 'pending':
+      case 'pending_payment':
         return 'Pending';
+      case 'expired':
+        return 'Expired';
+      case 'cancelled':
+        return 'Cancelled';
       case 'failed':
         return 'Failed';
       default:
@@ -120,7 +125,9 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                               const SizedBox(height: 8),
                               Text(
                                 state.message,
-                                style: AppTextStyles.secondary(AppTextStyles.bodyLarge),
+                                style: AppTextStyles.secondary(
+                                  AppTextStyles.bodyLarge,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 16),
@@ -151,7 +158,9 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                             children: [
                               // Booking cards
-                              ...state.bookings.map((booking) => _buildBookingCard(booking)),
+                              ...state.bookings.map(
+                                (booking) => _buildBookingCard(booking),
+                              ),
                             ],
                           ),
                         );
@@ -165,12 +174,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
               ],
             ),
             // Floating Bottom Nav
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildBottomNav(),
-            ),
+            Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomNav()),
           ],
         ),
       ),
@@ -179,7 +183,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 20),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 16,
+        16,
+        20,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.textPrimary,
         borderRadius: BorderRadius.only(
@@ -257,7 +266,10 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.textPrimary.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(8),
@@ -272,9 +284,14 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                     const Spacer(),
                     // Payment status badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(booking.status).withValues(alpha: 0.1),
+                        color: _getStatusColor(
+                          booking.status,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -321,7 +338,11 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 court.city?.name ?? 'Unknown',
@@ -329,7 +350,9 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                               ),
                               const SizedBox(width: 10),
                               Icon(
-                                court.material == 'Cement' ? Icons.grid_4x4_outlined : Icons.grass_outlined,
+                                court.material == 'Cement'
+                                    ? Icons.grid_4x4_outlined
+                                    : Icons.grass_outlined,
                                 size: 14,
                                 color: AppColors.textSecondary,
                               ),
@@ -346,9 +369,14 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                           const SizedBox(height: 8),
                           // Price with lime background
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: isUpcoming ? AppColors.primary : AppColors.background,
+                              color: isUpcoming
+                                  ? AppColors.primary
+                                  : AppColors.background,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -382,7 +410,11 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.textPrimary),
+                              child: const Icon(
+                                Icons.calendar_today_rounded,
+                                size: 16,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -416,7 +448,11 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.access_time_rounded, size: 16, color: AppColors.textPrimary),
+                              child: const Icon(
+                                Icons.access_time_rounded,
+                                size: 16,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -463,7 +499,9 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: isUpcoming ? AppColors.primary : AppColors.background,
+                      color: isUpcoming
+                          ? AppColors.primary
+                          : AppColors.background,
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Center(
@@ -499,8 +537,10 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     switch (status) {
       case 'paid':
         return Colors.green;
-      case 'pending':
+      case 'pending_payment':
         return Colors.orange;
+      case 'expired':
+      case 'cancelled':
       case 'failed':
         return Colors.red;
       default:
@@ -522,9 +562,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
           const SizedBox(height: 24),
           Text(
             'No ${_selectedTab.toLowerCase()} bookings',
-            style: AppTextStyles.heading3.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
@@ -538,9 +576,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 
   Widget _buildBottomNav() {
     return Container(
-      padding: const EdgeInsets.only(
-        bottom: 30,
-      ),
+      padding: const EdgeInsets.only(bottom: 30),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(6),
@@ -576,10 +612,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
           Navigator.pushAndRemoveUntil(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const BrowsePage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const BrowsePage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
             (route) => false,
@@ -589,10 +627,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const ScoreboardPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const ScoreboardPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -601,10 +641,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const ProfilePage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -618,7 +660,9 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.15) : const Color(0xFF2A2A2A),
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.15)
+              : const Color(0xFF2A2A2A),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -636,10 +680,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const SearchPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SearchPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(milliseconds: 150),
           ),
         );

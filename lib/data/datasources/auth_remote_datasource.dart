@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:padalpro/core/config/app_config.dart';
 import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/data/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
@@ -59,12 +60,12 @@ abstract class AuthRemoteDataSource {
   });
 }
 
-/// Implementation of AuthRemoteDataSource using ApiClient
+/// Implementation of AuthRemoteDataSource using Supabase.
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient _supabaseClient;
 
   AuthRemoteDataSourceImpl({required SupabaseClient supabaseClient})
-      : _supabaseClient = supabaseClient;
+    : _supabaseClient = supabaseClient;
 
   @override
   Future<AuthResultModel> register({
@@ -77,13 +78,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     File? profilePhoto,
   }) async {
     if (password != passwordConfirmation) {
-      throw const ValidationException(message: 'Password confirmation does not match');
+      throw const ValidationException(
+        message: 'Password confirmation does not match',
+      );
     }
 
     try {
       final response = await _supabaseClient.auth.signUp(
         email: email,
         password: password,
+        emailRedirectTo: AppConfig.authCallbackUrl,
         data: {
           'name': name,
           if (phone != null && phone.isNotEmpty) 'phone': phone,
@@ -95,7 +99,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final authUser = response.user;
       if (authUser == null || session == null) {
         throw const AuthException(
-          message: 'Registration succeeded. Please confirm your email before signing in.',
+          message:
+              'Registration succeeded. Please confirm your email before signing in.',
         );
       }
 
@@ -158,7 +163,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final started = await _supabaseClient.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'com.padalpro.app://login-callback/',
+        redirectTo: AppConfig.authCallbackUrl,
       );
       if (!started) {
         throw const AuthException(message: 'Unable to start Google sign in');
@@ -209,8 +214,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final photoUrl = profilePhoto != null
           ? await _uploadProfilePhoto(authUser.id, profilePhoto)
           : removePhoto
-              ? null
-              : undefinedPhotoUrl;
+          ? null
+          : undefinedPhotoUrl;
 
       return _upsertAndFetchProfile(
         id: authUser.id,
@@ -239,7 +244,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String newPasswordConfirmation,
   }) async {
     if (newPassword != newPasswordConfirmation) {
-      throw const ValidationException(message: 'Password confirmation does not match');
+      throw const ValidationException(
+        message: 'Password confirmation does not match',
+      );
     }
 
     try {
@@ -260,7 +267,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         .from('profiles')
         .select()
         .eq('id', id)
-        .single();
+        .maybeSingle();
+
+    if (data == null) {
+      final authUser = _supabaseClient.auth.currentUser;
+      if (authUser == null) {
+        throw const AuthException(message: 'User is not authenticated');
+      }
+
+      final metadata = authUser.userMetadata ?? {};
+      return _upsertAndFetchProfile(
+        id: authUser.id,
+        name:
+            (metadata['name'] as String?) ??
+            authUser.email?.split('@').first ??
+            'PadalPro User',
+        email: authUser.email ?? '',
+        phone: metadata['phone'] as String?,
+        gender: metadata['gender'] as String?,
+        photoUrl: metadata['photo_url'] as String?,
+      );
+    }
 
     return _profileFromSupabase(data);
   }
@@ -297,13 +324,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   Future<String> _uploadProfilePhoto(String userId, File file) async {
     final extension = file.path.split('.').last;
-    final objectPath = '$userId/${DateTime.now().millisecondsSinceEpoch}.$extension';
-    await _supabaseClient.storage.from('profile-photos').upload(
-          objectPath,
-          file,
-          fileOptions: const FileOptions(upsert: true),
-        );
-    return _supabaseClient.storage.from('profile-photos').getPublicUrl(objectPath);
+    final objectPath =
+        '$userId/${DateTime.now().millisecondsSinceEpoch}.$extension';
+    await _supabaseClient.storage
+        .from('profile-photos')
+        .upload(objectPath, file, fileOptions: const FileOptions(upsert: true));
+    return _supabaseClient.storage
+        .from('profile-photos')
+        .getPublicUrl(objectPath);
   }
 
   UserModel _profileFromSupabase(Map<String, dynamic> json) {
