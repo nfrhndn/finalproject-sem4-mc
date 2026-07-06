@@ -24,23 +24,25 @@ timestamp order, then run the seed file:
 
 1. `supabase/migrations/202606260001_initial_core_booking.sql`
 2. `supabase/migrations/202607030001_core_booking_status_and_tax_fixups.sql`
-3. `supabase/seed.sql`
+3. `supabase/migrations/202607060001_community_open_match_split_bill.sql`
+4. `supabase/seed.sql`
 
 The migrations create core booking tables, RLS policies, profile triggers,
-storage buckets, booking RPCs, expired booking cleanup, and tax calculation.
+storage buckets, booking RPCs, expired booking cleanup, tax calculation,
+community open matches, and manual split bill RPCs.
+
+If the app shows `PGRST202` or says a Community RPC cannot be found, the latest
+migration has not been applied to the Supabase project yet, or the API schema
+cache has not refreshed. Wait briefly, then restart the app.
 
 ## 3. Configure Auth
 
 Enable Email/Password in Supabase Auth. In Auth URL Configuration, add this
-mobile redirect URL for email confirmation and OAuth callbacks:
+mobile redirect URL for email confirmation callbacks:
 
 ```text
 com.padalpro.app://login-callback/
 ```
-
-For Google SSO:
-
-- Enable Google provider in Supabase Auth.
 
 Android and iOS are already configured to receive that callback.
 
