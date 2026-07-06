@@ -26,8 +26,11 @@ abstract class AuthRemoteDataSource {
     required String password,
   });
 
-  /// Login with Google SSO
+  /// Login with Google
   Future<void> signInWithGoogle();
+
+  /// Send reset password email
+  Future<void> resetPassword(String email);
 
   /// Check whether Supabase already has a persisted auth session
   bool hasActiveSession();
@@ -77,6 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? gender,
     File? profilePhoto,
   }) async {
+    final normalizedEmail = email.trim().toLowerCase();
     if (password != passwordConfirmation) {
       throw const ValidationException(
         message: 'Password confirmation does not match',
@@ -85,7 +89,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     try {
       final response = await _supabaseClient.auth.signUp(
-        email: email,
+        email: normalizedEmail,
         password: password,
         emailRedirectTo: AppConfig.authCallbackUrl,
         data: {
@@ -98,10 +102,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final session = response.session;
       final authUser = response.user;
       if (authUser == null || session == null) {
-        throw const AuthException(
-          message:
-              'Registration succeeded. Please confirm your email before signing in.',
-        );
+        throw EmailConfirmationRequiredException(email: normalizedEmail);
       }
 
       final photoUrl = profilePhoto != null
@@ -110,7 +111,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = await _upsertAndFetchProfile(
         id: authUser.id,
         name: name,
-        email: email,
+        email: normalizedEmail,
         phone: phone,
         gender: gender,
         photoUrl: photoUrl,
@@ -119,10 +120,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return AuthResultModel(user: user, token: session.accessToken);
     } on AuthException {
       rethrow;
+    } on EmailConfirmationRequiredException {
+      rethrow;
     } on ValidationException {
       rethrow;
     } on AuthApiException catch (e) {
-      throw AuthException(message: e.message);
+      throw AuthException(message: _friendlyAuthMessage(e.message));
     } on StorageException catch (e) {
       throw ServerException(message: e.message);
     } catch (e) {
@@ -136,8 +139,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
+      final normalizedEmail = email.trim().toLowerCase();
       final response = await _supabaseClient.auth.signInWithPassword(
-        email: email,
+        email: normalizedEmail,
         password: password,
       );
 
@@ -152,7 +156,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on AuthException {
       rethrow;
     } on AuthApiException catch (e) {
-      throw AuthException(message: e.message);
+      throw AuthException(message: _friendlyAuthMessage(e.message));
     } catch (e) {
       throw ServerException(message: 'Failed to login: $e');
     }
@@ -160,20 +164,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> signInWithGoogle() async {
+    throw const AuthException(
+      message:
+          'Google sign in belum tersedia. Gunakan email dan password untuk login.',
+    );
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
     try {
-      final started = await _supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.google,
+      await _supabaseClient.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
         redirectTo: AppConfig.authCallbackUrl,
       );
-      if (!started) {
-        throw const AuthException(message: 'Unable to start Google sign in');
-      }
-    } on AuthException {
-      rethrow;
     } on AuthApiException catch (e) {
-      throw AuthException(message: e.message);
+      throw AuthException(message: _friendlyAuthMessage(e.message));
     } catch (e) {
-      throw ServerException(message: 'Failed to start Google sign in: $e');
+      throw ServerException(message: 'Failed to send password reset email: $e');
     }
   }
 
@@ -229,7 +236,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on AuthException {
       rethrow;
     } on AuthApiException catch (e) {
-      throw AuthException(message: e.message);
+      throw AuthException(message: _friendlyAuthMessage(e.message));
     } on StorageException catch (e) {
       throw ServerException(message: e.message);
     } catch (e) {
@@ -254,7 +261,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         UserAttributes(password: newPassword),
       );
     } on AuthApiException catch (e) {
-      throw AuthException(message: e.message);
+      throw AuthException(message: _friendlyAuthMessage(e.message));
     } catch (e) {
       throw ServerException(message: 'Failed to change password: $e');
     }
@@ -285,7 +292,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         email: authUser.email ?? '',
         phone: metadata['phone'] as String?,
         gender: metadata['gender'] as String?,
-        photoUrl: metadata['photo_url'] as String?,
+        photoUrl:
+            (metadata['photo_url'] as String?) ??
+            (metadata['avatar_url'] as String?) ??
+            (metadata['picture'] as String?),
       );
     }
 
@@ -345,5 +355,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       'email_verified_at': null,
       'created_at': json['created_at'],
     });
+  }
+
+  String _friendlyAuthMessage(String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('invalid login credentials')) {
+      return 'Email atau password salah. Pastikan email sama persis dengan akun yang terdaftar, atau gunakan Forgot Password untuk reset password.';
+    }
+    if (normalized.contains('email not confirmed')) {
+      return 'Email belum dikonfirmasi. Cek inbox atau spam email kamu, lalu klik link konfirmasi sebelum login.';
+    }
+    if (normalized.contains('user already registered') ||
+        normalized.contains('already registered')) {
+      return 'Email ini sudah terdaftar. Silakan login, atau gunakan Forgot Password jika lupa password.';
+    }
+    if (normalized.contains('signup disabled')) {
+      return 'Pendaftaran sedang dinonaktifkan di Supabase Auth settings.';
+    }
+    if (normalized.contains('oauth')) {
+      return 'Google sign in belum siap. Pastikan Google provider dan redirect URL sudah dikonfigurasi di Supabase.';
+    }
+    return message;
   }
 }

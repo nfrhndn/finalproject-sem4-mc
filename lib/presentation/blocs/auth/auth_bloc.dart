@@ -13,12 +13,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   User? _currentUser;
 
   AuthBloc({required AuthRepository authRepository})
-      : _authRepository = authRepository,
-        super(const AuthInitial()) {
+    : _authRepository = authRepository,
+      super(const AuthInitial()) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
+    on<AuthPasswordResetRequested>(_onAuthPasswordResetRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
     on<AuthStateReset>(_onAuthStateReset);
     on<AuthUpdateProfileRequested>(_onAuthUpdateProfileRequested);
@@ -83,7 +84,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     result.fold(
-      (failure) => emit(_mapFailureToAuthError(failure)),
+      (failure) {
+        if (failure is AuthEmailConfirmationRequiredFailure) {
+          emit(
+            AuthRegistrationPending(
+              email: failure.email,
+              message: failure.message,
+            ),
+          );
+          return;
+        }
+        emit(_mapFailureToAuthError(failure));
+      },
       (authResult) {
         _currentUser = authResult.user;
         emit(AuthAuthenticated(user: authResult.user));
@@ -103,13 +115,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       password: event.password,
     );
 
-    result.fold(
-      (failure) => emit(_mapFailureToAuthError(failure)),
-      (authResult) {
-        _currentUser = authResult.user;
-        emit(AuthAuthenticated(user: authResult.user));
-      },
-    );
+    result.fold((failure) => emit(_mapFailureToAuthError(failure)), (
+      authResult,
+    ) {
+      _currentUser = authResult.user;
+      emit(AuthAuthenticated(user: authResult.user));
+    });
   }
 
   /// Handle user logout
@@ -124,11 +135,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthUnauthenticated());
   }
 
-  /// Reset auth state (clear errors)
-  void _onAuthStateReset(
-    AuthStateReset event,
+  Future<void> _onAuthPasswordResetRequested(
+    AuthPasswordResetRequested event,
     Emitter<AuthState> emit,
-  ) {
+  ) async {
+    emit(const AuthLoading());
+
+    final email = event.email.trim().toLowerCase();
+    final result = await _authRepository.resetPassword(email);
+    result.fold(
+      (failure) => emit(_mapFailureToAuthError(failure)),
+      (_) => emit(AuthPasswordResetEmailSent(email: email)),
+    );
+  }
+
+  /// Reset auth state (clear errors)
+  void _onAuthStateReset(AuthStateReset event, Emitter<AuthState> emit) {
     // If user is logged in, restore authenticated state
     if (_currentUser != null) {
       emit(AuthAuthenticated(user: _currentUser!));
@@ -153,13 +175,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       removePhoto: event.removePhoto,
     );
 
-    result.fold(
-      (failure) => emit(_mapFailureToAuthError(failure)),
-      (user) {
-        _currentUser = user;
-        emit(AuthAuthenticated(user: user));
-      },
-    );
+    result.fold((failure) => emit(_mapFailureToAuthError(failure)), (user) {
+      _currentUser = user;
+      emit(AuthAuthenticated(user: user));
+    });
   }
 
   /// Handle password change
@@ -170,7 +189,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // Check if user is logged in
     final currentUser = _currentUser;
     if (currentUser == null) {
-      emit(const AuthError(message: 'You must be logged in to change password'));
+      emit(
+        const AuthError(message: 'You must be logged in to change password'),
+      );
       return;
     }
 

@@ -17,8 +17,8 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     required AuthLocalDataSource localDataSource,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource;
+  }) : _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource;
 
   @override
   Future<Either<Failure, AuthResult>> register({
@@ -46,6 +46,13 @@ class AuthRepositoryImpl implements AuthRepository {
       await _localDataSource.cacheUser(authResult.user);
 
       return Right(authResult.toEntity());
+    } on EmailConfirmationRequiredException catch (e) {
+      return Left(
+        AuthEmailConfirmationRequiredFailure(
+          email: e.email,
+          message: e.message,
+        ),
+      );
     } on ValidationException catch (e) {
       return Left(ValidationFailure(message: e.message, errors: e.errors));
     } on NetworkException catch (e) {
@@ -92,6 +99,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> signInWithGoogle() async {
     try {
       await _remoteDataSource.signInWithGoogle();
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPassword(String email) async {
+    try {
+      await _remoteDataSource.resetPassword(email);
       return const Right(null);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));

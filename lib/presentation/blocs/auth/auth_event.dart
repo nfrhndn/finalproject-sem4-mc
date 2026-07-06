@@ -37,14 +37,14 @@ class AuthRegisterRequested extends AuthEvent {
 
   @override
   List<Object?> get props => [
-        name,
-        email,
-        password,
-        passwordConfirmation,
-        phone,
-        gender,
-        profilePhoto,
-      ];
+    name,
+    email,
+    password,
+    passwordConfirmation,
+    phone,
+    gender,
+    profilePhoto,
+  ];
 }
 
 /// Event to login with email and password
@@ -52,18 +52,25 @@ class AuthLoginRequested extends AuthEvent {
   final String email;
   final String password;
 
-  const AuthLoginRequested({
-    required this.email,
-    required this.password,
-  });
+  const AuthLoginRequested({required this.email, required this.password});
 
   @override
   List<Object?> get props => [email, password];
 }
 
-/// Event to login with Google SSO
+/// Event to login with Google
 class AuthGoogleSignInRequested extends AuthEvent {
   const AuthGoogleSignInRequested();
+}
+
+/// Event to send password reset email
+class AuthPasswordResetRequested extends AuthEvent {
+  final String email;
+
+  const AuthPasswordResetRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
 }
 
 /// Event to logout
@@ -95,7 +102,14 @@ class AuthUpdateProfileRequested extends AuthEvent {
   });
 
   @override
-  List<Object?> get props => [name, email, phone, gender, profilePhoto, removePhoto];
+  List<Object?> get props => [
+    name,
+    email,
+    phone,
+    gender,
+    profilePhoto,
+    removePhoto,
+  ];
 }
 
 /// Event to change user password
@@ -111,5 +125,9 @@ class AuthChangePasswordRequested extends AuthEvent {
   });
 
   @override
-  List<Object?> get props => [currentPassword, newPassword, newPasswordConfirmation];
+  List<Object?> get props => [
+    currentPassword,
+    newPassword,
+    newPasswordConfirmation,
+  ];
 }

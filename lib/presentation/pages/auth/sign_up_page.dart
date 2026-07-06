@@ -6,6 +6,7 @@ import 'package:padalpro/core/theme/app_colors.dart';
 import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:padalpro/core/utils/snackbar_helper.dart';
 import 'package:padalpro/presentation/blocs/auth/auth.dart';
+import 'package:padalpro/presentation/pages/auth/sign_in_page.dart';
 import 'package:padalpro/presentation/pages/browse/browse_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -54,7 +55,9 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 24),
               Text(
                 'Choose Photo',
-                style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.heading3.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -119,18 +122,18 @@ class _SignUpPageState extends State<SignUpPage> {
     if (!_formKey.currentState!.validate()) return;
 
     context.read<AuthBloc>().add(
-          AuthRegisterRequested(
-            name: _nameController.text.trim(),
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-            passwordConfirmation: _confirmPasswordController.text,
-            phone: _phoneController.text.trim().isNotEmpty
-                ? _phoneController.text.trim()
-                : null,
-            gender: _selectedGender,
-            profilePhoto: _selectedPhoto,
-          ),
-        );
+      AuthRegisterRequested(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim().toLowerCase(),
+        password: _passwordController.text,
+        passwordConfirmation: _confirmPasswordController.text,
+        phone: _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
+            : null,
+        gender: _selectedGender,
+        profilePhoto: _selectedPhoto,
+      ),
+    );
   }
 
   @override
@@ -158,73 +161,78 @@ class _SignUpPageState extends State<SignUpPage> {
         } else if (state is AuthError) {
           // Show error snackbar at top
           SnackBarHelper.showError(context, state.message);
+        } else if (state is AuthRegistrationPending) {
+          SnackBarHelper.showSuccess(
+            context,
+            '${state.message} Cek inbox atau spam ${state.email}.',
+          );
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SignInPage()),
+          );
         }
       },
       builder: (context, state) {
         final isLoading = state is AuthLoading;
 
         return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background image - Tennis/Padel related from Unsplash
-          Image.network(
-            'https://images.unsplash.com/photo-1723980839948-95ccbffd3cb4?q=80&w=1335&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                color: AppColors.textPrimary,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                    color: AppColors.primary,
-                  ),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                decoration: const BoxDecoration(
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background image - Tennis/Padel related from Unsplash
+              Image.network(
+                'https://images.unsplash.com/photo-1723980839948-95ccbffd3cb4?q=80&w=1335&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: AppColors.textPrimary,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Dark overlay for readability
+              Container(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFF1A1A2E),
-                      Color(0xFF16213E),
+                      Colors.black.withValues(alpha: 0.2),
+                      Colors.black.withValues(alpha: 0.2),
                     ],
                   ),
                 ),
-              );
-            },
-          ),
-          // Dark overlay for readability
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.2),
-                  Colors.black.withValues(alpha: 0.2),
-                ],
               ),
-            ),
-          ),
-          // Content
-          SingleChildScrollView(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: MediaQuery.of(context).padding.top + 20,
-              bottom: MediaQuery.of(context).padding.bottom + 40,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              // Content
+              SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: MediaQuery.of(context).padding.top + 20,
+                  bottom: MediaQuery.of(context).padding.bottom + 40,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     // Header row with back button and text
                     Row(
                       children: [
@@ -256,12 +264,16 @@ class _SignUpPageState extends State<SignUpPage> {
                             children: [
                               Text(
                                 'Create Account',
-                                style: AppTextStyles.white(AppTextStyles.heading1).copyWith(fontSize: 22),
+                                style: AppTextStyles.white(
+                                  AppTextStyles.heading1,
+                                ).copyWith(fontSize: 22),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 'Join us and start booking courts!',
-                                style: AppTextStyles.body.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                                style: AppTextStyles.body.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                ),
                               ),
                             ],
                           ),
@@ -299,10 +311,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text(
-                                'PadalPro',
-                                style: AppTextStyles.heading1,
-                              ),
+                              Text('PadalPro', style: AppTextStyles.heading1),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -311,91 +320,107 @@ class _SignUpPageState extends State<SignUpPage> {
                             children: [
                               // Avatar - no border
                               GestureDetector(
-                            onTap: _pickImage,
-                            child: Container(
-                              width: 70,
-                              height: 70,
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                                shape: BoxShape.circle,
-                                image: _selectedPhoto != null
-                                    ? DecorationImage(
-                                        image: FileImage(_selectedPhoto!),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
-                              ),
-                              child: _selectedPhoto == null
-                                  ? Icon(
-                                      Icons.person_outline,
-                                      size: 28,
-                                      color: AppColors.textSecondary,
-                                    )
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Text and buttons
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Profile Photo',
-                                  style: AppTextStyles.heading5.copyWith(fontWeight: FontWeight.w600),
+                                onTap: _pickImage,
+                                child: Container(
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.background,
+                                    shape: BoxShape.circle,
+                                    image: _selectedPhoto != null
+                                        ? DecorationImage(
+                                            image: FileImage(_selectedPhoto!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child: _selectedPhoto == null
+                                      ? Icon(
+                                          Icons.person_outline,
+                                          size: 28,
+                                          color: AppColors.textSecondary,
+                                        )
+                                      : null,
                                 ),
-                                const SizedBox(height: 12),
-                                Row(
+                              ),
+                              const SizedBox(width: 16),
+                              // Text and buttons
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Add/Change photo button
-                                    GestureDetector(
-                                      onTap: _pickImage,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 10,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primary,
-                                          borderRadius: BorderRadius.circular(100),
-                                        ),
-                                        child: Text(
-                                          _selectedPhoto != null ? 'Change' : 'Add Photo',
-                                          style: AppTextStyles.buttonSmall.copyWith(fontWeight: FontWeight.w800),
-                                        ),
+                                    Text(
+                                      'Profile Photo',
+                                      style: AppTextStyles.heading5.copyWith(
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    // Remove photo button - only show if photo selected
-                                    if (_selectedPhoto != null) ...[
-                                      const SizedBox(width: 10),
-                                      GestureDetector(
-                                        onTap: _removePhoto,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(100),
-                                          ),
-                                          child: Text(
-                                            'Remove',
-                                            style: AppTextStyles.withColor(
-                                              AppTextStyles.buttonSmall.copyWith(fontWeight: FontWeight.w800),
-                                              Colors.red,
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        // Add/Change photo button
+                                        GestureDetector(
+                                          onTap: _pickImage,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 10,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary,
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                            child: Text(
+                                              _selectedPhoto != null
+                                                  ? 'Change'
+                                                  : 'Add Photo',
+                                              style: AppTextStyles.buttonSmall
+                                                  .copyWith(
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        // Remove photo button - only show if photo selected
+                                        if (_selectedPhoto != null) ...[
+                                          const SizedBox(width: 10),
+                                          GestureDetector(
+                                            onTap: _removePhoto,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 10,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                              ),
+                                              child: Text(
+                                                'Remove',
+                                                style: AppTextStyles.withColor(
+                                                  AppTextStyles.buttonSmall
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                  Colors.red,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
                         ],
                       ),
                     ),
@@ -449,8 +474,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                    .hasMatch(value)) {
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
                                   return 'Please enter a valid email';
                                 }
                                 return null;
@@ -489,12 +515,16 @@ class _SignUpPageState extends State<SignUpPage> {
                                       });
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: _selectedGender == 'male'
                                             ? AppColors.textPrimary
                                             : AppColors.background,
-                                        borderRadius: BorderRadius.circular(100),
+                                        borderRadius: BorderRadius.circular(
+                                          100,
+                                        ),
                                         border: Border.all(
                                           color: _selectedGender == 'male'
                                               ? AppColors.textPrimary
@@ -503,7 +533,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                         ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.male_rounded,
@@ -515,11 +546,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                           const SizedBox(width: 8),
                                           Text(
                                             'Male',
-                                            style: AppTextStyles.bodyLargeSemibold.copyWith(
-                                              color: _selectedGender == 'male'
-                                                  ? Colors.white
-                                                  : AppColors.textSecondary,
-                                            ),
+                                            style: AppTextStyles
+                                                .bodyLargeSemibold
+                                                .copyWith(
+                                                  color:
+                                                      _selectedGender == 'male'
+                                                      ? Colors.white
+                                                      : AppColors.textSecondary,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -536,12 +570,16 @@ class _SignUpPageState extends State<SignUpPage> {
                                       });
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: _selectedGender == 'female'
                                             ? AppColors.textPrimary
                                             : AppColors.background,
-                                        borderRadius: BorderRadius.circular(100),
+                                        borderRadius: BorderRadius.circular(
+                                          100,
+                                        ),
                                         border: Border.all(
                                           color: _selectedGender == 'female'
                                               ? AppColors.textPrimary
@@ -550,7 +588,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                         ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.female_rounded,
@@ -562,11 +601,15 @@ class _SignUpPageState extends State<SignUpPage> {
                                           const SizedBox(width: 8),
                                           Text(
                                             'Female',
-                                            style: AppTextStyles.bodyLargeSemibold.copyWith(
-                                              color: _selectedGender == 'female'
-                                                  ? Colors.white
-                                                  : AppColors.textSecondary,
-                                            ),
+                                            style: AppTextStyles
+                                                .bodyLargeSemibold
+                                                .copyWith(
+                                                  color:
+                                                      _selectedGender ==
+                                                          'female'
+                                                      ? Colors.white
+                                                      : AppColors.textSecondary,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -629,7 +672,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                                    _obscureConfirmPassword =
+                                        !_obscureConfirmPassword;
                                   });
                                 },
                               ),
@@ -654,7 +698,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: AppColors.textPrimary,
-                                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
+                                  disabledBackgroundColor: AppColors.primary
+                                      .withValues(alpha: 0.6),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(100),
@@ -691,7 +736,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                   },
                                   child: Text(
                                     'Sign In',
-                                    style: AppTextStyles.bodySemibold.copyWith(fontWeight: FontWeight.w700),
+                                    style: AppTextStyles.bodySemibold.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -703,19 +750,16 @@ class _SignUpPageState extends State<SignUpPage> {
                     const SizedBox(height: 40),
                   ],
                 ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
       },
     );
   }
 
   Widget _buildFieldLabel(String label) {
-    return Text(
-      label,
-      style: AppTextStyles.bodySemibold,
-    );
+    return Text(label, style: AppTextStyles.bodySemibold);
   }
 
   Widget _buildTextField({
@@ -741,7 +785,10 @@ class _SignUpPageState extends State<SignUpPage> {
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.background,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(100),
           borderSide: BorderSide.none,
@@ -788,15 +835,13 @@ class _PhotoOptionButton extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: AppColors.textPrimary,
-            ),
+            Icon(icon, size: 32, color: AppColors.textPrimary),
             const SizedBox(height: 8),
             Text(
               label,
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
