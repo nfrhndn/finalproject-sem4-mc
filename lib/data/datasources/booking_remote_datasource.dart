@@ -36,6 +36,9 @@ abstract class BookingRemoteDataSource {
   /// Get the user's next upcoming booking
   Future<BookingModel?> getNextBooking();
 
+  /// Watch a booking by ID for realtime status/detail updates
+  Stream<BookingModel?> watchBookingById(int bookingId);
+
   /// Create a new pending booking (locks time slots)
   Future<CreateBookingResponse> createBooking({
     required int courtId,
@@ -99,6 +102,23 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     } catch (e) {
       throw ServerException(message: 'Failed to load next booking: $e');
     }
+  }
+
+  @override
+  Stream<BookingModel?> watchBookingById(int bookingId) {
+    if (_supabaseClient.auth.currentUser == null) {
+      return Stream.value(null);
+    }
+
+    return _supabaseClient
+        .from('bookings')
+        .stream(primaryKey: ['id'])
+        .eq('id', bookingId)
+        .asyncMap((rows) async {
+          if (rows.isEmpty) return null;
+          final bookings = await _hydrateBookingModels(rows);
+          return bookings.isEmpty ? null : bookings.first;
+        });
   }
 
   @override

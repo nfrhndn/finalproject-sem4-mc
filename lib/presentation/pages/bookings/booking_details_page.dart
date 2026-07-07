@@ -1,21 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:padalpro/core/injection/injection_container.dart';
 import 'package:intl/intl.dart';
 import 'package:padalpro/core/theme/app_colors.dart';
 import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:padalpro/core/utils/snackbar_helper.dart';
 import 'package:padalpro/domain/entities/booking.dart';
+import 'package:padalpro/domain/repositories/booking_repository.dart';
 import 'package:padalpro/presentation/blocs/booking/booking_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class BookingDetailsPage extends StatelessWidget {
+class BookingDetailsPage extends StatefulWidget {
   final int bookingId;
 
   const BookingDetailsPage({super.key, required this.bookingId});
 
+  @override
+  State<BookingDetailsPage> createState() => _BookingDetailsPageState();
+}
+
+class _BookingDetailsPageState extends State<BookingDetailsPage> {
+  late final Stream<Booking?> _bookingStream;
+  late final Booking? _initialBooking;
+
   // Default court image fallback
   static const String _defaultCourtImage =
       'https://plus.unsplash.com/premium_photo-1723924861073-5764741be57c?w=1200';
+
+  @override
+  void initState() {
+    super.initState();
+    _initialBooking = context.read<BookingBloc>().findById(widget.bookingId);
+    _bookingStream = sl<BookingRepository>().watchBookingById(widget.bookingId);
+  }
 
   String _formatPrice(int price) {
     return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
@@ -89,45 +106,40 @@ class BookingDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get booking from BLoC cache
-    final booking = context.read<BookingBloc>().findById(bookingId);
+    return StreamBuilder<Booking?>(
+      stream: _bookingStream,
+      initialData: _initialBooking,
+      builder: (context, snapshot) {
+        final booking = snapshot.data;
 
-    if (booking == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Booking not found',
-                  style: AppTextStyles.heading3.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.textPrimary,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Go Back'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+        if (snapshot.hasError && booking == null) {
+          return _buildMessageState(
+            context,
+            icon: Icons.wifi_off_rounded,
+            title: 'Unable to sync booking',
+            message: 'Please check your connection and try again.',
+          );
+        }
 
+        if (booking == null &&
+            snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingState();
+        }
+
+        if (booking == null) {
+          return _buildMessageState(
+            context,
+            icon: Icons.error_outline,
+            title: 'Booking not found',
+          );
+        }
+
+        return _buildBookingDetails(context, booking);
+      },
+    );
+  }
+
+  Widget _buildBookingDetails(BuildContext context, Booking booking) {
     final court = booking.court;
     final courtImage = court.thumbnail ?? _defaultCourtImage;
     final paymentStatus = _getPaymentStatus(booking.status);
@@ -164,6 +176,66 @@ class BookingDetailsPage extends StatelessWidget {
           // Bottom CTA
           _buildBottomCTA(context, court.phone),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.textPrimary),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessageState(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    String? message,
+  }) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 64, color: AppColors.textSecondary),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: AppTextStyles.heading3.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (message != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    style: AppTextStyles.body,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.textPrimary,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

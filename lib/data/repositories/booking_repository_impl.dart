@@ -46,6 +46,13 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
+  Stream<Booking?> watchBookingById(int bookingId) {
+    return _remoteDataSource.watchBookingById(bookingId).handleError((error) {
+      throw ServerFailure(message: 'Failed to watch booking: $error');
+    });
+  }
+
+  @override
   Future<Either<Failure, CreateBookingResponse>> createBooking({
     required int courtId,
     required String date,

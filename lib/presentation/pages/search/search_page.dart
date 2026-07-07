@@ -22,11 +22,11 @@ class _SearchPageState extends State<SearchPage> {
   final _searchLocalDataSource = sl<SearchLocalDataSource>();
 
   late final CourtBloc _courtBloc;
+  late Future<List<String>> _recentSearchesFuture;
 
   bool _hasSearched = false;
   bool _isLoading = false;
   bool _isLoadingMore = false;
-  List<String> _recentSearches = [];
   List<Court> _searchResults = [];
   String? _errorMessage;
   String _currentQuery = '';
@@ -52,7 +52,7 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _courtBloc = sl<CourtBloc>();
-    _loadRecentSearches();
+    _recentSearchesFuture = _loadRecentSearches();
     _scrollController.addListener(_onScroll);
 
     // Auto focus the search field when page opens
@@ -83,23 +83,24 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  Future<void> _loadRecentSearches() async {
-    final searches = await _searchLocalDataSource.getRecentSearches();
+  Future<List<String>> _loadRecentSearches() async {
+    return _searchLocalDataSource.getRecentSearches();
+  }
+
+  void _refreshRecentSearches() {
     setState(() {
-      _recentSearches = searches;
+      _recentSearchesFuture = _loadRecentSearches();
     });
   }
 
   Future<void> _removeRecentSearch(String query) async {
     await _searchLocalDataSource.removeRecentSearch(query);
-    await _loadRecentSearches();
+    _refreshRecentSearches();
   }
 
   Future<void> _clearAllRecent() async {
     await _searchLocalDataSource.clearRecentSearches();
-    setState(() {
-      _recentSearches = [];
-    });
+    _refreshRecentSearches();
   }
 
   Future<void> _onSearch(String query) async {
@@ -107,9 +108,9 @@ class _SearchPageState extends State<SearchPage> {
 
     // Save to recent searches
     await _searchLocalDataSource.addRecentSearch(query);
-    await _loadRecentSearches();
 
     setState(() {
+      _recentSearchesFuture = _loadRecentSearches();
       _hasSearched = true;
       _isLoading = true;
       _errorMessage = null;
@@ -121,11 +122,9 @@ class _SearchPageState extends State<SearchPage> {
     });
 
     // Fetch from backend (page 1)
-    _courtBloc.add(CourtsFetchRequested(
-      search: query,
-      perPage: _perPage,
-      page: 1,
-    ));
+    _courtBloc.add(
+      CourtsFetchRequested(search: query, perPage: _perPage, page: 1),
+    );
   }
 
   void _loadMore() {
@@ -133,11 +132,13 @@ class _SearchPageState extends State<SearchPage> {
       _isLoadingMore = true;
     });
 
-    _courtBloc.add(CourtsFetchRequested(
-      search: _currentQuery,
-      perPage: _perPage,
-      page: _currentPage + 1,
-    ));
+    _courtBloc.add(
+      CourtsFetchRequested(
+        search: _currentQuery,
+        perPage: _perPage,
+        page: _currentPage + 1,
+      ),
+    );
   }
 
   void _clearSearch() {
@@ -198,10 +199,7 @@ class _SearchPageState extends State<SearchPage> {
                         children: [
                           const SizedBox(height: 24),
                           // Recent searches
-                          if (_recentSearches.isNotEmpty) ...[
-                            _buildRecentSearches(),
-                            const SizedBox(height: 24),
-                          ],
+                          _buildRecentSearchesFuture(),
                           // Popular searches
                           _buildPopularSearches(),
                           const SizedBox(height: 40),
@@ -217,7 +215,12 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 20),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 16,
+        16,
+        20,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.textPrimary,
         borderRadius: BorderRadius.only(
@@ -281,7 +284,10 @@ class _SearchPageState extends State<SearchPage> {
                         )
                       : null,
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
                 textInputAction: TextInputAction.search,
                 onChanged: (_) => setState(() {}),
@@ -294,17 +300,34 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildRecentSearches() {
+  Widget _buildRecentSearchesFuture() {
+    return FutureBuilder<List<String>>(
+      future: _recentSearchesFuture,
+      builder: (context, snapshot) {
+        final searches = snapshot.data ?? const <String>[];
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            searches.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          children: [
+            _buildRecentSearches(searches),
+            const SizedBox(height: 24),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRecentSearches(List<String> recentSearches) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Recent Searches',
-              style: AppTextStyles.heading4,
-            ),
+            Text('Recent Searches', style: AppTextStyles.heading4),
             GestureDetector(
               onTap: _clearAllRecent,
               child: Text(
@@ -321,10 +344,10 @@ class _SearchPageState extends State<SearchPage> {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
-            children: _recentSearches.asMap().entries.map((entry) {
+            children: recentSearches.asMap().entries.map((entry) {
               final index = entry.key;
               final search = entry.value;
-              final isLast = index == _recentSearches.length - 1;
+              final isLast = index == recentSearches.length - 1;
 
               return Column(
                 children: [
@@ -334,7 +357,10 @@ class _SearchPageState extends State<SearchPage> {
                       _onSearch(search);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       child: Row(
                         children: [
                           const Icon(
@@ -344,10 +370,7 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(
-                              search,
-                              style: AppTextStyles.bodyLarge,
-                            ),
+                            child: Text(search, style: AppTextStyles.bodyLarge),
                           ),
                           GestureDetector(
                             onTap: () => _removeRecentSearch(search),
@@ -382,10 +405,7 @@ class _SearchPageState extends State<SearchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Popular Searches',
-          style: AppTextStyles.heading4,
-        ),
+        Text('Popular Searches', style: AppTextStyles.heading4),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
@@ -397,7 +417,10 @@ class _SearchPageState extends State<SearchPage> {
                 _onSearch(search['label'] as String);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(100),
@@ -449,7 +472,9 @@ class _SearchPageState extends State<SearchPage> {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: _searchResults.length + 2, // +1 for header, +1 for loading/end indicator
+      itemCount:
+          _searchResults.length +
+          2, // +1 for header, +1 for loading/end indicator
       itemBuilder: (context, index) {
         if (index == 0) {
           // Header row
@@ -458,10 +483,7 @@ class _SearchPageState extends State<SearchPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Search Results',
-                  style: AppTextStyles.heading4,
-                ),
+                Text('Search Results', style: AppTextStyles.heading4),
                 Text(
                   '$_totalResults courts found',
                   style: AppTextStyles.bodySemibold.copyWith(
@@ -544,12 +566,7 @@ class _SearchPageState extends State<SearchPage> {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Text(
-          'No more results',
-          style: AppTextStyles.body,
-        ),
-      ),
+      child: Center(child: Text('No more results', style: AppTextStyles.body)),
     );
   }
 
@@ -571,9 +588,7 @@ class _SearchPageState extends State<SearchPage> {
           const SizedBox(height: 16),
           Text(
             'Something went wrong',
-            style: AppTextStyles.heading4.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.heading4.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
@@ -619,15 +634,10 @@ class _SearchPageState extends State<SearchPage> {
           const SizedBox(height: 16),
           Text(
             'No courts found',
-            style: AppTextStyles.heading4.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.heading4.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
-          Text(
-            'Try a different search term',
-            style: AppTextStyles.body,
-          ),
+          Text('Try a different search term', style: AppTextStyles.body),
         ],
       ),
     );
@@ -641,9 +651,7 @@ class _SearchPageState extends State<SearchPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => CourtDetailsPage(
-              courtId: court.id,
-            ),
+            builder: (_) => CourtDetailsPage(courtId: court.id),
           ),
         );
       },
@@ -666,9 +674,12 @@ class _SearchPageState extends State<SearchPage> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(20),
+                  ),
                   child: Image.network(
-                    court.thumbnail ?? 'https://plus.unsplash.com/premium_photo-1723924861073-5764741be57c?w=800',
+                    court.thumbnail ??
+                        'https://plus.unsplash.com/premium_photo-1723924861073-5764741be57c?w=800',
                     height: 130,
                     width: 130,
                     fit: BoxFit.cover,
@@ -687,7 +698,10 @@ class _SearchPageState extends State<SearchPage> {
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.textPrimary,
                       borderRadius: BorderRadius.circular(100),
@@ -750,10 +764,7 @@ class _SearchPageState extends State<SearchPage> {
                           color: AppColors.textSecondary,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          court.material,
-                          style: AppTextStyles.caption,
-                        ),
+                        Text(court.material, style: AppTextStyles.caption),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -766,10 +777,7 @@ class _SearchPageState extends State<SearchPage> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        Text(
-                          '/hr',
-                          style: AppTextStyles.captionSmall,
-                        ),
+                        Text('/hr', style: AppTextStyles.captionSmall),
                       ],
                     ),
                   ],

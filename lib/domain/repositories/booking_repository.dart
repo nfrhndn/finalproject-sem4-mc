@@ -13,6 +13,9 @@ abstract class BookingRepository {
   /// Returns null if no upcoming booking exists
   Future<Either<Failure, Booking?>> getNextBooking();
 
+  /// Watch a booking by ID for realtime status/detail updates
+  Stream<Booking?> watchBookingById(int bookingId);
+
   /// Create a new pending booking (locks time slots)
   Future<Either<Failure, CreateBookingResponse>> createBooking({
     required int courtId,
