@@ -1,11 +1,14 @@
 {
     "name": "padalpro",
     "short_name": "padalpro",
+    "name": "PadalPro",
+    "short_name": "PadalPro",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
     "description": "A new Flutter project.",
+    "description": "PadalPro app for padel court booking and community play.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

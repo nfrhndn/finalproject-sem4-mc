@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/data/datasources/booking_remote_datasource.dart';
 import 'package:padalpro/domain/entities/booking.dart';
@@ -25,7 +24,7 @@ abstract class BookingRepository {
   /// Confirm a pending booking with proof of payment
   Future<Either<Failure, Booking>> confirmBooking({
     required int bookingId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   });
 
   /// Cancel a pending booking

@@ -9,8 +9,8 @@ import 'package:padalpro/presentation/blocs/booking/booking_event.dart';
 import 'package:padalpro/presentation/blocs/booking/booking_state.dart';
 import 'package:padalpro/presentation/pages/bookings/booking_details_page.dart';
 import 'package:padalpro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/presentation/pages/community/community_page.dart';
 import 'package:padalpro/presentation/pages/profile/profile_page.dart';
-import 'package:padalpro/presentation/pages/scoreboard/scoreboard_page.dart';
 import 'package:padalpro/presentation/pages/search/search_page.dart';
 
 class MyBookingsPage extends StatefulWidget {
@@ -593,7 +593,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
               const SizedBox(width: 4),
               _buildNavCenterButton(),
               const SizedBox(width: 4),
-              _buildNavIcon(1, Icons.scoreboard_outlined),
+              _buildNavIcon(1, Icons.groups_2_outlined),
               const SizedBox(width: 4),
               _buildNavIcon(4, Icons.person_outline),
             ],
@@ -623,12 +623,12 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
             (route) => false,
           );
         } else if (index == 1) {
-          // Navigate to Scoreboard page
+          // Navigate to Community page
           Navigator.push(
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  const ScoreboardPage(),
+                  const CommunityPage(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     return FadeTransition(opacity: animation, child: child);

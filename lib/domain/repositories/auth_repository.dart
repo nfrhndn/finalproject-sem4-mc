@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/domain/entities/user.dart';
 
@@ -16,7 +15,7 @@ abstract class AuthRepository {
     required String passwordConfirmation,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
   });
 
   /// Login with email and password
@@ -26,8 +25,11 @@ abstract class AuthRepository {
     required String password,
   });
 
-  /// Login with Google SSO
+  /// Login with Google
   Future<Either<Failure, void>> signInWithGoogle();
+
+  /// Send reset password email
+  Future<Either<Failure, void>> resetPassword(String email);
 
   /// Logout the current user
   /// Returns [void] on success or [Failure] on error
@@ -50,7 +52,7 @@ abstract class AuthRepository {
     required String email,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
     bool removePhoto,
   });
 

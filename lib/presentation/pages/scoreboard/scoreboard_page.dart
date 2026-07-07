@@ -6,6 +6,7 @@ import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:padalpro/core/utils/snackbar_helper.dart';
 import 'package:padalpro/presentation/pages/bookings/my_bookings_page.dart';
 import 'package:padalpro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/presentation/pages/community/community_page.dart';
 import 'package:padalpro/presentation/pages/profile/profile_page.dart';
 import 'package:padalpro/presentation/pages/search/search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +19,7 @@ class ScoreboardPage extends StatefulWidget {
 }
 
 class _ScoreboardPageState extends State<ScoreboardPage> {
-  int _currentNavIndex = 1; // Scoreboard is selected
+  int _currentNavIndex = -1;
   bool _isLoading = true;
   String _selectedTab = 'Today';
 
@@ -31,13 +32,39 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
 
   String _getTodayDateStr() {
     final now = DateTime.now();
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${months[now.month - 1]} ${now.day}, ${now.year}';
   }
 
   String _getYesterdayDateStr() {
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${months[yesterday.month - 1]} ${yesterday.day}, ${yesterday.year}';
   }
 
@@ -88,14 +115,30 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
 
     // Older dates
     final now = DateTime.now();
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     final threeDaysAgo = now.subtract(const Duration(days: 3));
     final fiveDaysAgo = now.subtract(const Duration(days: 5));
     final weekAgo = now.subtract(const Duration(days: 7));
 
-    final threeDaysAgoStr = '${months[threeDaysAgo.month - 1]} ${threeDaysAgo.day}, ${threeDaysAgo.year}';
-    final fiveDaysAgoStr = '${months[fiveDaysAgo.month - 1]} ${fiveDaysAgo.day}, ${fiveDaysAgo.year}';
-    final weekAgoStr = '${months[weekAgo.month - 1]} ${weekAgo.day}, ${weekAgo.year}';
+    final threeDaysAgoStr =
+        '${months[threeDaysAgo.month - 1]} ${threeDaysAgo.day}, ${threeDaysAgo.year}';
+    final fiveDaysAgoStr =
+        '${months[fiveDaysAgo.month - 1]} ${fiveDaysAgo.day}, ${fiveDaysAgo.year}';
+    final weekAgoStr =
+        '${months[weekAgo.month - 1]} ${weekAgo.day}, ${weekAgo.year}';
 
     _matches = [
       // Today matches
@@ -206,7 +249,9 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
                         children: [
                           // Match cards
-                          ..._filteredMatches.map((match) => _buildMatchCard(match)),
+                          ..._filteredMatches.map(
+                            (match) => _buildMatchCard(match),
+                          ),
                           // Empty state section
                           if (_filteredMatches.isEmpty) _buildEmptyState(),
                         ],
@@ -243,12 +288,7 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
             ),
           ),
           // Floating Bottom Nav
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNav(),
-          ),
+          Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomNav()),
         ],
       ),
     );
@@ -256,7 +296,12 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 20),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 16,
+        16,
+        20,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.textPrimary,
         borderRadius: BorderRadius.only(
@@ -334,7 +379,10 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.textPrimary.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(8),
@@ -342,7 +390,11 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textPrimary),
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 12,
+                        color: AppColors.textPrimary,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         match['date'],
@@ -356,7 +408,10 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                 const Spacer(),
                 if (isTeam1Winner || isTeam2Winner)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFB300).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(100),
@@ -364,7 +419,11 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.emoji_events_rounded, size: 12, color: Color(0xFFFFB300)),
+                        const Icon(
+                          Icons.emoji_events_rounded,
+                          size: 12,
+                          color: Color(0xFFFFB300),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Team ${isTeam1Winner ? '1' : '2'}',
@@ -378,7 +437,10 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF9800).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(100),
@@ -405,41 +467,50 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                     children: [
                       Text(
                         'Team 1',
-                        style: AppTextStyles.secondary(AppTextStyles.tiny).copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.secondary(
+                          AppTextStyles.tiny,
+                        ).copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
-                      ...team1.map((player) => Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: isTeam1Winner ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
-                                    shape: BoxShape.circle,
-                                  ),
+                      ...team1.map(
+                        (player) => Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: isTeam1Winner
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                  shape: BoxShape.circle,
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    player,
-                                    style: AppTextStyles.bodySemibold,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  player,
+                                  style: AppTextStyles.bodySemibold,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
-                          )),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 // Score
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.background,
                     borderRadius: BorderRadius.circular(12),
@@ -450,23 +521,27 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                         '$score1',
                         style: AppTextStyles.heading1.copyWith(
                           fontSize: 22,
-                          color: isTeam1Winner ? AppColors.textPrimary : AppColors.textSecondary,
+                          color: isTeam1Winner
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Text(
                           ':',
-                          style: AppTextStyles.secondary(AppTextStyles.heading3).copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.secondary(
+                            AppTextStyles.heading3,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Text(
                         '$score2',
                         style: AppTextStyles.heading1.copyWith(
                           fontSize: 22,
-                          color: isTeam2Winner ? AppColors.textPrimary : AppColors.textSecondary,
+                          color: isTeam2Winner
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -480,37 +555,43 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                     children: [
                       Text(
                         'Team 2',
-                        style: AppTextStyles.secondary(AppTextStyles.tiny).copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.secondary(
+                          AppTextStyles.tiny,
+                        ).copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
-                      ...team2.map((player) => Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    player,
-                                    style: AppTextStyles.bodySemibold,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.end,
-                                  ),
+                      ...team2.map(
+                        (player) => Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  player,
+                                  style: AppTextStyles.bodySemibold,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.end,
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: isTeam2Winner ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
-                                    shape: BoxShape.circle,
-                                  ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: isTeam2Winner
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                  shape: BoxShape.circle,
                                 ),
-                              ],
-                            ),
-                          )),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -574,26 +655,42 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
               // Team 1
               Text(
                 'TEAM 1',
-                style: AppTextStyles.secondary(AppTextStyles.captionSmallBold).copyWith(
-                  letterSpacing: 1,
-                ),
+                style: AppTextStyles.secondary(
+                  AppTextStyles.captionSmallBold,
+                ).copyWith(letterSpacing: 1),
               ),
               const SizedBox(height: 12),
-              _buildTextField(team1Player1Controller, 'Player 1 Name', icon: Icons.person_outline),
+              _buildTextField(
+                team1Player1Controller,
+                'Player 1 Name',
+                icon: Icons.person_outline,
+              ),
               const SizedBox(height: 10),
-              _buildTextField(team1Player2Controller, 'Player 2 Name (Optional)', icon: Icons.person_outline),
+              _buildTextField(
+                team1Player2Controller,
+                'Player 2 Name (Optional)',
+                icon: Icons.person_outline,
+              ),
               const SizedBox(height: 20),
               // Team 2
               Text(
                 'TEAM 2',
-                style: AppTextStyles.secondary(AppTextStyles.captionSmallBold).copyWith(
-                  letterSpacing: 1,
-                ),
+                style: AppTextStyles.secondary(
+                  AppTextStyles.captionSmallBold,
+                ).copyWith(letterSpacing: 1),
               ),
               const SizedBox(height: 12),
-              _buildTextField(team2Player1Controller, 'Player 1 Name', icon: Icons.person_outline),
+              _buildTextField(
+                team2Player1Controller,
+                'Player 1 Name',
+                icon: Icons.person_outline,
+              ),
               const SizedBox(height: 10),
-              _buildTextField(team2Player2Controller, 'Player 2 Name (Optional)', icon: Icons.person_outline),
+              _buildTextField(
+                team2Player2Controller,
+                'Player 2 Name (Optional)',
+                icon: Icons.person_outline,
+              ),
               const SizedBox(height: 24),
               // Start Match button
               GestureDetector(
@@ -615,7 +712,10 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                       ],
                     );
                   } else {
-                    SnackBarHelper.showError(context, 'Please enter at least 1 player per team');
+                    SnackBarHelper.showError(
+                      context,
+                      'Please enter at least 1 player per team',
+                    );
                   }
                 },
                 child: Container(
@@ -626,10 +726,7 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Center(
-                    child: Text(
-                      'Start Match',
-                      style: AppTextStyles.heading4,
-                    ),
+                    child: Text('Start Match', style: AppTextStyles.heading4),
                   ),
                 ),
               ),
@@ -640,7 +737,11 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, {IconData? icon}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String hint, {
+    IconData? icon,
+  }) {
     return TextField(
       controller: controller,
       textCapitalization: TextCapitalization.words,
@@ -650,10 +751,15 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: AppTextStyles.secondary(AppTextStyles.bodyLarge),
-        prefixIcon: icon != null ? Icon(icon, color: AppColors.textPrimary, size: 20) : null,
+        prefixIcon: icon != null
+            ? Icon(icon, color: AppColors.textPrimary, size: 20)
+            : null,
         filled: true,
         fillColor: AppColors.background,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(100),
           borderSide: BorderSide.none,
@@ -670,7 +776,11 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
     );
   }
 
-  void _startMatch(BuildContext context, List<String> team1, List<String> team2) {
+  void _startMatch(
+    BuildContext context,
+    List<String> team1,
+    List<String> team2,
+  ) {
     int score1 = 0;
     int score2 = 0;
     int elapsedSeconds = 0;
@@ -700,7 +810,12 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
           }
 
           return Container(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).padding.bottom + 120),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).padding.bottom + 120,
+            ),
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
@@ -726,7 +841,10 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF74D50).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(100),
@@ -745,20 +863,24 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                           const SizedBox(width: 6),
                           Text(
                             'LIVE',
-                            style: AppTextStyles.withColor(
-                              AppTextStyles.captionSmallBold,
-                              const Color(0xFFF74D50),
-                            ).copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1,
-                            ),
+                            style:
+                                AppTextStyles.withColor(
+                                  AppTextStyles.captionSmallBold,
+                                  const Color(0xFFF74D50),
+                                ).copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.textPrimary.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(100),
@@ -783,352 +905,438 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 20),
-              // Main scoreboard card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
-                  borderRadius: BorderRadius.circular(24),
+                const SizedBox(height: 20),
+                // Main scoreboard card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.textPrimary,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      // Teams and score row
+                      Row(
+                        children: [
+                          // Team 1
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'TEAM 1',
+                                  style: AppTextStyles.secondary(
+                                    AppTextStyles.tiny,
+                                  ).copyWith(letterSpacing: 1),
+                                ),
+                                const SizedBox(height: 8),
+                                ...team1.map(
+                                  (player) => Text(
+                                    player,
+                                    style: AppTextStyles.white(
+                                      AppTextStyles.bodySemibold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Score
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '$score1',
+                                  style: AppTextStyles.heading1.copyWith(
+                                    fontSize: 36,
+                                    color: score1 > score2
+                                        ? AppColors.primary
+                                        : Colors.white,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  child: Text(
+                                    ':',
+                                    style:
+                                        AppTextStyles.secondary(
+                                          AppTextStyles.heading1,
+                                        ).copyWith(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                                Text(
+                                  '$score2',
+                                  style: AppTextStyles.heading1.copyWith(
+                                    fontSize: 36,
+                                    color: score2 > score1
+                                        ? AppColors.primary
+                                        : Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Team 2
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'TEAM 2',
+                                  style: AppTextStyles.secondary(
+                                    AppTextStyles.tiny,
+                                  ).copyWith(letterSpacing: 1),
+                                ),
+                                const SizedBox(height: 8),
+                                ...team2.map(
+                                  (player) => Text(
+                                    player,
+                                    style: AppTextStyles.white(
+                                      AppTextStyles.bodySemibold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Score control buttons
+                      Row(
+                        children: [
+                          // Team 1 controls
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    if (score1 > 0) {
+                                      setModalState(() => score1--);
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.remove_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: () => setModalState(() => score1++),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.add_rounded,
+                                      color: AppColors.textPrimary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 80),
+                          // Team 2 controls
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    if (score2 > 0) {
+                                      setModalState(() => score2--);
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.remove_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: () => setModalState(() => score2++),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.add_rounded,
+                                      color: AppColors.textPrimary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
+                const SizedBox(height: 16),
+                // Action buttons
+                Row(
                   children: [
-                    // Teams and score row
-                    Row(
-                      children: [
-                        // Team 1
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text(
-                                'TEAM 1',
-                                style: AppTextStyles.secondary(AppTextStyles.tiny).copyWith(
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              ...team1.map((player) => Text(
-                                    player,
-                                    style: AppTextStyles.white(AppTextStyles.bodySemibold),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  )),
-                            ],
-                          ),
-                        ),
-                        // Score
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          stopwatch.stop();
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(16),
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(100),
                           ),
-                          child: Row(
-                            children: [
-                              Text(
-                                '$score1',
-                                style: AppTextStyles.heading1.copyWith(
-                                  fontSize: 36,
-                                  color: score1 > score2 ? AppColors.primary : Colors.white,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text(
-                                  ':',
-                                  style: AppTextStyles.secondary(AppTextStyles.heading1).copyWith(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '$score2',
-                                style: AppTextStyles.heading1.copyWith(
-                                  fontSize: 36,
-                                  color: score2 > score1 ? AppColors.primary : Colors.white,
-                                ),
-                              ),
-                            ],
+                          child: Center(
+                            child: Text(
+                              'Cancel',
+                              style: AppTextStyles.heading5,
+                            ),
                           ),
                         ),
-                        // Team 2
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text(
-                                'TEAM 2',
-                                style: AppTextStyles.secondary(AppTextStyles.tiny).copyWith(
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              ...team2.map((player) => Text(
-                                    player,
-                                    style: AppTextStyles.white(AppTextStyles.bodySemibold),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  )),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    // Score control buttons
-                    Row(
-                      children: [
-                        // Team 1 controls
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (score1 > 0) setModalState(() => score1--);
-                                },
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.remove_rounded, color: Colors.white, size: 20),
-                                ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          // Show confirmation modal
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            barrierColor: Colors.transparent,
+                            builder: (confirmContext) => Container(
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                24,
+                                20,
+                                32,
                               ),
-                              const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () => setModalState(() => score1++),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.add_rounded, color: AppColors.textPrimary, size: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(30),
+                                  topRight: Radius.circular(30),
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, -5),
+                                  ),
+                                ],
                               ),
-                            ],
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Icon
+                                  Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.sports_tennis_rounded,
+                                      color: AppColors.textPrimary,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'End Match',
+                                    style: AppTextStyles.heading3.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Are you sure you want to end this match?',
+                                    style: AppTextStyles.secondary(
+                                      AppTextStyles.bodyLarge,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Buttons
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () =>
+                                              Navigator.pop(confirmContext),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.background,
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Continue',
+                                                style: AppTextStyles.heading5
+                                                    .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            stopwatch.stop();
+                                            final now = DateTime.now();
+                                            final months = [
+                                              'Jan',
+                                              'Feb',
+                                              'Mar',
+                                              'Apr',
+                                              'May',
+                                              'Jun',
+                                              'Jul',
+                                              'Aug',
+                                              'Sep',
+                                              'Oct',
+                                              'Nov',
+                                              'Dec',
+                                            ];
+                                            final dateStr =
+                                                '${months[now.month - 1]} ${now.day}, ${now.year}';
+
+                                            setState(() {
+                                              _matches.insert(0, {
+                                                'id':
+                                                    'M${DateTime.now().millisecondsSinceEpoch}',
+                                                'date': dateStr,
+                                                'team1': team1,
+                                                'team2': team2,
+                                                'score1': score1,
+                                                'score2': score2,
+                                                'status': 'Completed',
+                                              });
+                                            });
+                                            _saveMatches();
+                                            Navigator.pop(
+                                              confirmContext,
+                                            ); // Close confirmation
+                                            Navigator.pop(
+                                              context,
+                                            ); // Close live match
+                                            SnackBarHelper.showSuccess(
+                                              context,
+                                              'Match saved!',
+                                            );
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary,
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'End Match',
+                                                style: AppTextStyles.heading5
+                                                    .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'End Match',
+                              style: AppTextStyles.heading5,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 80),
-                        // Team 2 controls
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (score2 > 0) setModalState(() => score2--);
-                                },
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.remove_rounded, color: Colors.white, size: 20),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () => setModalState(() => score2++),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.add_rounded, color: AppColors.textPrimary, size: 20),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        stopwatch.stop();
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Cancel',
-                            style: AppTextStyles.heading5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // Show confirmation modal
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          barrierColor: Colors.transparent,
-                          builder: (confirmContext) => Container(
-                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(30),
-                                topRight: Radius.circular(30),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, -5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Icon
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.sports_tennis_rounded,
-                                    color: AppColors.textPrimary,
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'End Match',
-                                  style: AppTextStyles.heading3.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Are you sure you want to end this match?',
-                                  style: AppTextStyles.secondary(AppTextStyles.bodyLarge),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 24),
-                                // Buttons
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () => Navigator.pop(confirmContext),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 14),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.background,
-                                            borderRadius: BorderRadius.circular(100),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              'Continue',
-                                              style: AppTextStyles.heading5.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          stopwatch.stop();
-                                          final now = DateTime.now();
-                                          final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                          final dateStr = '${months[now.month - 1]} ${now.day}, ${now.year}';
-
-                                          setState(() {
-                                            _matches.insert(0, {
-                                              'id': 'M${DateTime.now().millisecondsSinceEpoch}',
-                                              'date': dateStr,
-                                              'team1': team1,
-                                              'team2': team2,
-                                              'score1': score1,
-                                              'score2': score2,
-                                              'status': 'Completed',
-                                            });
-                                          });
-                                          _saveMatches();
-                                          Navigator.pop(confirmContext); // Close confirmation
-                                          Navigator.pop(context); // Close live match
-                                          SnackBarHelper.showSuccess(context, 'Match saved!');
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 14),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary,
-                                            borderRadius: BorderRadius.circular(100),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              'End Match',
-                                              style: AppTextStyles.heading5.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'End Match',
-                            style: AppTextStyles.heading5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
+              ],
+            ),
+          );
         },
       ),
     );
@@ -1165,9 +1373,7 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
           const SizedBox(height: 24),
           Text(
             title,
-            style: AppTextStyles.heading3.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
@@ -1198,7 +1404,7 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
               const SizedBox(width: 4),
               _buildNavCenterButton(),
               const SizedBox(width: 4),
-              _buildNavIcon(1, Icons.scoreboard_outlined),
+              _buildNavIcon(1, Icons.groups_2_outlined),
               const SizedBox(width: 4),
               _buildNavIcon(4, Icons.person_outline),
             ],
@@ -1221,11 +1427,24 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                   const BrowsePage(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
             (route) => false,
+          );
+        } else if (index == 1) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const CommunityPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(milliseconds: 150),
+            ),
           );
         } else if (index == 3) {
           // Navigate to My Bookings page
@@ -1236,8 +1455,8 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                   const MyBookingsPage(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -1250,8 +1469,8 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                   const ProfilePage(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -1289,8 +1508,8 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                 const SearchPage(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(milliseconds: 150),
           ),
         );

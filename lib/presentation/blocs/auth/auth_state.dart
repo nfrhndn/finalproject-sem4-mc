@@ -44,15 +44,33 @@ class AuthUnauthenticated extends AuthState {
   const AuthUnauthenticated();
 }
 
+/// Registration succeeded, but Supabase requires email confirmation first.
+class AuthRegistrationPending extends AuthState {
+  final String email;
+  final String message;
+
+  const AuthRegistrationPending({required this.email, required this.message});
+
+  @override
+  List<Object?> get props => [email, message];
+}
+
+/// Reset password email has been sent.
+class AuthPasswordResetEmailSent extends AuthState {
+  final String email;
+
+  const AuthPasswordResetEmailSent({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
 /// Error state - authentication failed
 class AuthError extends AuthState {
   final String message;
   final Map<String, List<String>>? validationErrors;
 
-  const AuthError({
-    required this.message,
-    this.validationErrors,
-  });
+  const AuthError({required this.message, this.validationErrors});
 
   /// Get the first error message for a specific field
   String? getFieldError(String field) {

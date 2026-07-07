@@ -14,10 +14,7 @@ abstract class Failure extends Equatable {
 class ServerFailure extends Failure {
   final int? statusCode;
 
-  const ServerFailure({
-    required super.message,
-    this.statusCode,
-  });
+  const ServerFailure({required super.message, this.statusCode});
 
   @override
   List<Object?> get props => [message, statusCode];
@@ -32,26 +29,33 @@ class NetworkFailure extends Failure {
 
 /// Failure for cache/local storage errors
 class CacheFailure extends Failure {
-  const CacheFailure({
-    super.message = 'Cache error occurred',
-  });
+  const CacheFailure({super.message = 'Cache error occurred'});
 }
 
 /// Failure for authentication errors
 class AuthFailure extends Failure {
-  const AuthFailure({
-    super.message = 'Authentication failed',
+  const AuthFailure({super.message = 'Authentication failed'});
+}
+
+/// Failure when registration is waiting for email confirmation.
+class AuthEmailConfirmationRequiredFailure extends AuthFailure {
+  final String email;
+
+  const AuthEmailConfirmationRequiredFailure({
+    required this.email,
+    super.message =
+        'Registration succeeded. Please confirm your email before signing in.',
   });
+
+  @override
+  List<Object?> get props => [message, email];
 }
 
 /// Failure for validation errors
 class ValidationFailure extends Failure {
   final Map<String, List<String>>? errors;
 
-  const ValidationFailure({
-    required super.message,
-    this.errors,
-  });
+  const ValidationFailure({required super.message, this.errors});
 
   /// Get the first error message from the validation errors
   String get firstError {

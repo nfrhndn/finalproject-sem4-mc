@@ -12,9 +12,9 @@ import 'package:padalpro/presentation/blocs/court/court.dart';
 import 'package:padalpro/presentation/pages/bookings/booking_details_page.dart';
 import 'package:padalpro/presentation/pages/bookings/my_bookings_page.dart';
 import 'package:padalpro/presentation/pages/city/city_details_page.dart';
+import 'package:padalpro/presentation/pages/community/community_page.dart';
 import 'package:padalpro/presentation/pages/court/court_details_page.dart';
 import 'package:padalpro/presentation/pages/profile/profile_page.dart';
-import 'package:padalpro/presentation/pages/scoreboard/scoreboard_page.dart';
 import 'package:padalpro/presentation/pages/search/search_page.dart';
 import 'package:padalpro/presentation/widgets/widgets.dart';
 
@@ -48,7 +48,9 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
     // Refresh the next booking data (silent refresh to avoid blink)
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      context.read<BookingBloc>().add(const NextBookingFetchRequested(isRefresh: true));
+      context.read<BookingBloc>().add(
+        const NextBookingFetchRequested(isRefresh: true),
+      );
     }
   }
 
@@ -57,14 +59,17 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
     // Refresh cities (silent)
     context.read<CityBloc>().add(const CitiesFetchRequested(isRefresh: true));
     // Refresh featured courts (silent)
-    context.read<CourtBloc>().add(const FeaturedCourtsFetchRequested(isRefresh: true));
+    context.read<CourtBloc>().add(
+      const FeaturedCourtsFetchRequested(isRefresh: true),
+    );
     // Refresh next booking if authenticated (silent)
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      context.read<BookingBloc>().add(const NextBookingFetchRequested(isRefresh: true));
+      context.read<BookingBloc>().add(
+        const NextBookingFetchRequested(isRefresh: true),
+      );
     }
   }
-
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -99,133 +104,178 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
           if (isAuthenticated) {
             final bookingState = context.read<BookingBloc>().state;
             if (bookingState is BookingInitial) {
-              context.read<BookingBloc>().add(const NextBookingFetchRequested());
+              context.read<BookingBloc>().add(
+                const NextBookingFetchRequested(),
+              );
             }
           }
 
           return Scaffold(
-          backgroundColor: const Color(0xFFEDF0F6),
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 16,
-                  bottom: 120,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Section
-                    _buildHeader(context, user),
-                const SizedBox(height: 24),
-
-                // Latest Booking Card - only show when authenticated
-                if (isAuthenticated)
-                  BlocBuilder<BookingBloc, BookingState>(
-                    builder: (context, bookingState) {
-                      if (bookingState is NextBookingLoaded && bookingState.booking != null) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-                          child: NextBookingCard(
-                            booking: bookingState.booking!,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => BlocProvider.value(
-                                    value: context.read<BookingBloc>(),
-                                    child: BookingDetailsPage(bookingId: bookingState.booking!.id),
-                                  ),
-                                ),
-                              );
-                            },
-                            onViewAllTap: () {
-                              Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) => const MyBookingsPage(),
-                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                    return FadeTransition(opacity: animation, child: child);
-                                  },
-                                  transitionDuration: const Duration(milliseconds: 150),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
+            backgroundColor: const Color(0xFFEDF0F6),
+            body: Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 16,
+                    bottom: 120,
                   ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Section
+                      _buildHeader(context, user),
+                      const SizedBox(height: 24),
 
-                // Browse by City Section
-                _buildBrowseByCitySection(),
-                const SizedBox(height: 24),
+                      // Latest Booking Card - only show when authenticated
+                      if (isAuthenticated)
+                        BlocBuilder<BookingBloc, BookingState>(
+                          builder: (context, bookingState) {
+                            if (bookingState is NextBookingLoaded &&
+                                bookingState.booking != null) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  bottom: 24,
+                                ),
+                                child: NextBookingCard(
+                                  booking: bookingState.booking!,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => BlocProvider.value(
+                                          value: context.read<BookingBloc>(),
+                                          child: BookingDetailsPage(
+                                            bookingId: bookingState.booking!.id,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  onViewAllTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => const MyBookingsPage(),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              return FadeTransition(
+                                                opacity: animation,
+                                                child: child,
+                                              );
+                                            },
+                                        transitionDuration: const Duration(
+                                          milliseconds: 150,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
 
-                // Featured Section
-                _buildFeaturedSection(),
-                const SizedBox(height: 24),
+                      // Browse by City Section
+                      _buildBrowseByCitySection(),
+                      const SizedBox(height: 24),
 
-                // Coach for Hire Section
-                _buildCoachSection(),
-                const SizedBox(height: 24),
+                      // Featured Section
+                      _buildFeaturedSection(),
+                      const SizedBox(height: 24),
+
+                      // Coach for Hire Section
+                      _buildCoachSection(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+                // Floating Bottom Nav
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: BottomNavBar(
+                    currentIndex: _currentNavIndex,
+                    onHomeTap: () => setState(() => _currentNavIndex = 0),
+                    onHomeDoubleTap: _refreshHomeData,
+                    onBookingsTap: () => Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const MyBookingsPage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                        transitionDuration: const Duration(milliseconds: 150),
+                      ),
+                    ),
+                    onSearchTap: () => Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const SearchPage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                        transitionDuration: const Duration(milliseconds: 150),
+                      ),
+                    ),
+                    onCommunityTap: () => Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const CommunityPage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                        transitionDuration: const Duration(milliseconds: 150),
+                      ),
+                    ),
+                    onProfileTap: () => Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const ProfilePage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                        transitionDuration: const Duration(milliseconds: 150),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-            // Floating Bottom Nav
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: BottomNavBar(
-                currentIndex: _currentNavIndex,
-                onHomeTap: () => setState(() => _currentNavIndex = 0),
-                onHomeDoubleTap: _refreshHomeData,
-                onBookingsTap: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const MyBookingsPage(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    transitionDuration: const Duration(milliseconds: 150),
-                  ),
-                ),
-                onSearchTap: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const SearchPage(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    transitionDuration: const Duration(milliseconds: 150),
-                  ),
-                ),
-                onScoreboardTap: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const ScoreboardPage(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    transitionDuration: const Duration(milliseconds: 150),
-                  ),
-                ),
-                onProfileTap: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    transitionDuration: const Duration(milliseconds: 150),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        );
+          );
         },
       ),
     );
@@ -267,14 +317,8 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _getGreeting(),
-                  style: AppTextStyles.body,
-                ),
-                Text(
-                  user?.name ?? 'Guest',
-                  style: AppTextStyles.heading2,
-                ),
+                Text(_getGreeting(), style: AppTextStyles.body),
+                Text(user?.name ?? 'Guest', style: AppTextStyles.heading2),
               ],
             ),
           ),
@@ -332,10 +376,7 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
 
               if (state is CityError) {
                 return Center(
-                  child: Text(
-                    state.message,
-                    style: AppTextStyles.body,
-                  ),
+                  child: Text(state.message, style: AppTextStyles.body),
                 );
               }
 
@@ -357,7 +398,9 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
                   itemBuilder: (context, index) {
                     final city = cities[index];
                     return Padding(
-                      padding: EdgeInsets.only(right: index < cities.length - 1 ? 12 : 0),
+                      padding: EdgeInsets.only(
+                        right: index < cities.length - 1 ? 12 : 0,
+                      ),
                       child: CityCard(
                         city: city,
                         onTap: () => Navigator.push(
@@ -366,7 +409,9 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
                             builder: (_) => CityDetailsPage(
                               cityId: city.id,
                               cityName: city.name,
-                              cityImage: city.photoUrl ?? 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200',
+                              cityImage:
+                                  city.photoUrl ??
+                                  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200',
                               courtsCount: '${city.courtsCount} courts',
                             ),
                           ),
@@ -405,10 +450,7 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
 
               if (state is CourtError) {
                 return Center(
-                  child: Text(
-                    state.message,
-                    style: AppTextStyles.body,
-                  ),
+                  child: Text(state.message, style: AppTextStyles.body),
                 );
               }
 
@@ -430,7 +472,9 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
                   itemBuilder: (context, index) {
                     final court = courts[index];
                     return Padding(
-                      padding: EdgeInsets.only(right: index < courts.length - 1 ? 16 : 0),
+                      padding: EdgeInsets.only(
+                        right: index < courts.length - 1 ? 16 : 0,
+                      ),
                       child: FeaturedCourtCard(
                         court: court,
                         onTap: () => Navigator.push(
@@ -457,20 +501,68 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
     final List<String> tabs = ['Beginners', 'Intermediate', 'Advanced'];
 
     final List<Map<String, String>> allCoaches = [
-      {'name': 'Andi Pratama', 'rating': '4.9', 'specialty': 'Padel Technique Coach', 'level': 'Intermediate', 'image': 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=1200'},
-      {'name': 'Maya Sari', 'rating': '4.8', 'specialty': 'Fitness & Conditioning', 'level': 'Advanced', 'image': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=1200'},
-      {'name': 'Reza Gunawan', 'rating': '4.7', 'specialty': 'Strategy & Game Play', 'level': 'Advanced', 'image': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=1200'},
-      {'name': 'Siti Rahma', 'rating': '4.9', 'specialty': 'Beginner Fundamentals', 'level': 'Beginners', 'image': 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=1200'},
-      {'name': 'Budi Santoso', 'rating': '4.6', 'specialty': 'Basic Techniques', 'level': 'Beginners', 'image': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200'},
-      {'name': 'Diana Putri', 'rating': '4.8', 'specialty': 'Intermediate Skills', 'level': 'Intermediate', 'image': 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=1200'},
+      {
+        'name': 'Andi Pratama',
+        'rating': '4.9',
+        'specialty': 'Padel Technique Coach',
+        'level': 'Intermediate',
+        'image':
+            'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=1200',
+      },
+      {
+        'name': 'Maya Sari',
+        'rating': '4.8',
+        'specialty': 'Fitness & Conditioning',
+        'level': 'Advanced',
+        'image':
+            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=1200',
+      },
+      {
+        'name': 'Reza Gunawan',
+        'rating': '4.7',
+        'specialty': 'Strategy & Game Play',
+        'level': 'Advanced',
+        'image':
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=1200',
+      },
+      {
+        'name': 'Siti Rahma',
+        'rating': '4.9',
+        'specialty': 'Beginner Fundamentals',
+        'level': 'Beginners',
+        'image':
+            'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=1200',
+      },
+      {
+        'name': 'Budi Santoso',
+        'rating': '4.6',
+        'specialty': 'Basic Techniques',
+        'level': 'Beginners',
+        'image':
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200',
+      },
+      {
+        'name': 'Diana Putri',
+        'rating': '4.8',
+        'specialty': 'Intermediate Skills',
+        'level': 'Intermediate',
+        'image':
+            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=1200',
+      },
     ];
 
-    final coaches = allCoaches.where((c) => c['level'] == tabs[_selectedCoachTab]).toList();
+    final coaches = allCoaches
+        .where((c) => c['level'] == tabs[_selectedCoachTab])
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(title: 'Coach for Hire', actionText: 'See All', onActionTap: () {}),
+        SectionHeader(
+          title: 'Coach for Hire',
+          actionText: 'See All',
+          onActionTap: () {},
+        ),
         const SizedBox(height: 14),
         // Tabs
         SizedBox(
@@ -484,8 +576,13 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
               return GestureDetector(
                 onTap: () => setState(() => _selectedCoachTab = index),
                 child: Container(
-                  margin: EdgeInsets.only(right: index < tabs.length - 1 ? 10 : 0),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  margin: EdgeInsets.only(
+                    right: index < tabs.length - 1 ? 10 : 0,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.textPrimary : Colors.white,
                     borderRadius: BorderRadius.circular(100),
@@ -506,15 +603,19 @@ class _BrowsePageState extends State<BrowsePage> with RouteAware {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
-            children: coaches.map((coach) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: CoachCard(
-                name: coach['name']!,
-                rating: coach['rating']!,
-                specialty: coach['specialty']!,
-                imageUrl: coach['image']!,
-              ),
-            )).toList(),
+            children: coaches
+                .map(
+                  (coach) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: CoachCard(
+                      name: coach['name']!,
+                      rating: coach['rating']!,
+                      specialty: coach['specialty']!,
+                      imageUrl: coach['image']!,
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],

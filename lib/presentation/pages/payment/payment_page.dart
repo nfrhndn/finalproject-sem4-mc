@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:padalpro/core/theme/app_colors.dart';
 import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +10,7 @@ import 'package:padalpro/core/utils/snackbar_helper.dart';
 import 'package:padalpro/domain/repositories/booking_repository.dart';
 import 'package:padalpro/presentation/pages/booking/success_booking_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:padalpro/presentation/widgets/common/picked_image_preview.dart';
 
 class PaymentPage extends StatefulWidget {
   final int bookingId;
@@ -50,7 +51,7 @@ class _PaymentPageState extends State<PaymentPage> {
   final List<String> _paymentMethods = ['Transfer', 'E-Wallet', 'Credit Card'];
 
   // Proof of payment
-  File? _proofOfPayment;
+  XFile? _proofOfPayment;
 
   // Countdown timer - uses backend expiration time
   late int _remainingSeconds;
@@ -253,7 +254,7 @@ class _PaymentPageState extends State<PaymentPage> {
                         );
                         if (image != null) {
                           setState(() {
-                            _proofOfPayment = File(image.path);
+                            _proofOfPayment = image;
                           });
                         }
                       },
@@ -295,7 +296,7 @@ class _PaymentPageState extends State<PaymentPage> {
                         );
                         if (image != null) {
                           setState(() {
-                            _proofOfPayment = File(image.path);
+                            _proofOfPayment = image;
                           });
                         }
                       },
@@ -452,9 +453,10 @@ class _PaymentPageState extends State<PaymentPage> {
     });
 
     if (kIsWeb) {
-      await Future.delayed(
-        const Duration(seconds: 1),
-      ); // Beri efek loading sebentar
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (!context.mounted) return;
+
       setState(() {
         _isProcessing = false;
       });
@@ -1019,46 +1021,15 @@ class _PaymentPageState extends State<PaymentPage> {
 
   Widget _buildPaymentContent() {
     if (_selectedPaymentTab == 0) {
-      // Transfer
+      // 1. Transfer Bank
       return _buildBankTransferInfo();
+    } else if (_selectedPaymentTab == 1) {
+      // 2. E-Wallet (Menampilkan GoPay)
+      return _buildGopayPaymentInfo();
     } else {
-      // E-Wallet or Credit Card - Coming Soon
-      return _buildComingSoon();
+      // 3. Credit Card (Masih Coming Soon)
+      return _buildCreditCardPaymentInfo();
     }
-  }
-
-  Widget _buildComingSoon() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.schedule_rounded,
-              size: 40,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Coming Soon',
-            style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'This payment method will be available soon',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.secondary(AppTextStyles.bodyLarge),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildBankTransferInfo() {
@@ -1137,115 +1108,7 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
         const SizedBox(height: 24),
         // Proof of payment upload
-        GestureDetector(
-          onTap: _pickProofOfPayment,
-          child: _proofOfPayment != null
-              ? Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary, width: 2),
-                  ),
-                  child: Row(
-                    children: [
-                      // Preview image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: kIsWeb
-                            ? Image.network(
-                                _proofOfPayment!.path,
-                                width: 70,
-                                height: 70,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.file(
-                                _proofOfPayment!,
-                                width: 70,
-                                height: 70,
-                                fit: BoxFit.cover,
-                              ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: AppColors.primary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Receipt Uploaded',
-                                  style: AppTextStyles.heading5,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tap to change image',
-                              style: AppTextStyles.body,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        Icons.edit_rounded,
-                        color: AppColors.textPrimary,
-                        size: 22,
-                      ),
-                    ],
-                  ),
-                )
-              : Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 24,
-                    horizontal: 20,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.textSecondary.withValues(alpha: 0.3),
-                      width: 2,
-                      strokeAlign: BorderSide.strokeAlignInside,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.upload_file_rounded,
-                          size: 28,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Upload Payment Receipt',
-                        style: AppTextStyles.heading5,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tap to take a photo or choose from gallery',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.caption,
-                      ),
-                    ],
-                  ),
-                ),
-        ),
+        _buildUploadReceiptSection(),
       ],
     );
   }
@@ -1258,8 +1121,9 @@ class _PaymentPageState extends State<PaymentPage> {
         Text(value, style: AppTextStyles.bodySemibold),
         const SizedBox(width: 8),
         GestureDetector(
-          onTap: () {
-            // TODO: Copy to clipboard
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: value));
+            if (!mounted) return;
             SnackBarHelper.showInfo(context, 'Copied to clipboard');
           },
           child: Icon(
@@ -1269,6 +1133,279 @@ class _PaymentPageState extends State<PaymentPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildGopayPaymentInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00AED6), // Biru khas GoPay
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'GoPay',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('GoPay Manual Transfer', style: AppTextStyles.heading4),
+                  Text('PadalPro Indonesia', style: AppTextStyles.caption),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // 2. Detail Nomor HP GoPay
+        Text(
+          'Payment Details',
+          style: AppTextStyles.bodyLargeSemibold.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildBankDetail('GoPay Number', '081234567890'),
+        const SizedBox(height: 10),
+        _buildBankDetail('Account Name', 'PadalPro Indonesia'),
+        const SizedBox(height: 20),
+
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline, size: 20, color: AppColors.textPrimary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Silakan transfer sesuai nominal total ke nomor GoPay di atas, lalu upload screenshot bukti transfernya di bawah ini.',
+                  style: AppTextStyles.captionSemibold.copyWith(
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        _buildUploadReceiptSection(),
+      ],
+    );
+  }
+
+  Widget _buildCreditCardPaymentInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xFFFF9900,
+                  ), // Warna oranye khas kartu kredit
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.credit_card_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Credit Card Manual Transfer',
+                    style: AppTextStyles.heading4,
+                  ),
+                  Text('Visa / Mastercard / JCB', style: AppTextStyles.caption),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        Text(
+          'Payment Details',
+          style: AppTextStyles.bodyLargeSemibold.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildBankDetail('Bank Name', 'BCA (Credit Account)'),
+        const SizedBox(height: 10),
+        _buildBankDetail(
+          'Account Number',
+          '1234567890',
+        ), // <--- Isi nomor rekening kelompokmu
+        const SizedBox(height: 10),
+        _buildBankDetail('Account Name', 'PadalPro Indonesia'),
+        const SizedBox(height: 20),
+
+        // 3. Instruksi Singkat
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline, size: 20, color: AppColors.textPrimary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Silakan lakukan transfer ke rekening Visa/Mastercard di atas melalui aplikasi bank Anda, kemudian upload bukti bayar/struknya di bawah ini.',
+                  style: AppTextStyles.captionSemibold.copyWith(
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        _buildUploadReceiptSection(),
+      ],
+    );
+  }
+
+  Widget _buildUploadReceiptSection() {
+    return GestureDetector(
+      onTap: _pickProofOfPayment,
+      child: _proofOfPayment != null
+          ? Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary, width: 2),
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: PickedImagePreview(
+                      file: _proofOfPayment!,
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Receipt Uploaded',
+                              style: AppTextStyles.heading5,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text('Tap to change image', style: AppTextStyles.body),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.edit_rounded,
+                    color: AppColors.textPrimary,
+                    size: 22,
+                  ),
+                ],
+              ),
+            )
+          : Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.textSecondary.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: AppColors.background,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.upload_file_rounded,
+                      size: 28,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text('Upload Payment Receipt', style: AppTextStyles.heading5),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tap to take a photo or choose from gallery',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 

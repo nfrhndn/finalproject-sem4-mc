@@ -7,9 +7,9 @@ import 'package:padalpro/domain/entities/user.dart';
 import 'package:padalpro/presentation/blocs/auth/auth.dart';
 import 'package:padalpro/presentation/pages/auth/sign_in_page.dart';
 import 'package:padalpro/presentation/pages/bookings/my_bookings_page.dart';
+import 'package:padalpro/presentation/pages/community/community_page.dart';
 import 'package:padalpro/presentation/pages/profile/change_password_page.dart';
 import 'package:padalpro/presentation/pages/profile/edit_profile_page.dart';
-import 'package:padalpro/presentation/pages/scoreboard/scoreboard_page.dart';
 import 'package:padalpro/presentation/pages/search/search_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -52,83 +52,85 @@ class _ProfilePageState extends State<ProfilePage> {
                       offset: const Offset(0, -50),
                       child: _buildProfileInfo(user),
                     ),
-                // Menu sections
-                Transform.translate(
-                  offset: const Offset(0, -30),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        // Account section
-                        _buildMenuSection(
-                          title: 'Account',
-                          items: [
-                            _MenuItem(
-                              icon: Icons.person_outline,
-                              title: 'Edit Profile',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const EditProfilePage()),
-                                );
-                              },
+                    // Menu sections
+                    Transform.translate(
+                      offset: const Offset(0, -30),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            // Account section
+                            _buildMenuSection(
+                              title: 'Account',
+                              items: [
+                                _MenuItem(
+                                  icon: Icons.person_outline,
+                                  title: 'Edit Profile',
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const EditProfilePage(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                _MenuItem(
+                                  icon: Icons.lock_outline,
+                                  title: 'Change Password',
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const ChangePasswordPage(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                _MenuItem(
+                                  icon: Icons.notifications_outlined,
+                                  title: 'Notifications',
+                                  onTap: () {},
+                                ),
+                              ],
                             ),
-                            _MenuItem(
-                              icon: Icons.lock_outline,
-                              title: 'Change Password',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const ChangePasswordPage()),
-                                );
-                              },
+                            const SizedBox(height: 16),
+                            // Support section
+                            _buildMenuSection(
+                              title: 'Support',
+                              items: [
+                                _MenuItem(
+                                  icon: Icons.help_outline,
+                                  title: 'Help Center',
+                                  onTap: () {},
+                                ),
+                                _MenuItem(
+                                  icon: Icons.policy_outlined,
+                                  title: 'Privacy Policy',
+                                  onTap: () {},
+                                ),
+                                _MenuItem(
+                                  icon: Icons.description_outlined,
+                                  title: 'Terms of Service',
+                                  onTap: () {},
+                                ),
+                              ],
                             ),
-                            _MenuItem(
-                              icon: Icons.notifications_outlined,
-                              title: 'Notifications',
-                              onTap: () {},
-                            ),
+                            const SizedBox(height: 24),
+                            // Logout button
+                            _buildLogoutButton(context),
+                            const SizedBox(height: 16),
+                            // App version
+                            Text('Version 1.0.0', style: AppTextStyles.caption),
+                            const SizedBox(height: 120),
                           ],
                         ),
-                        const SizedBox(height: 16),
-                        // Support section
-                        _buildMenuSection(
-                          title: 'Support',
-                          items: [
-                            _MenuItem(
-                              icon: Icons.help_outline,
-                              title: 'Help Center',
-                              onTap: () {},
-                            ),
-                            _MenuItem(
-                              icon: Icons.policy_outlined,
-                              title: 'Privacy Policy',
-                              onTap: () {},
-                            ),
-                            _MenuItem(
-                              icon: Icons.description_outlined,
-                              title: 'Terms of Service',
-                              onTap: () {},
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        // Logout button
-                        _buildLogoutButton(context),
-                        const SizedBox(height: 16),
-                        // App version
-                        Text(
-                          'Version 1.0.0',
-                          style: AppTextStyles.caption,
-                        ),
-                        const SizedBox(height: 120),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
               // Floating Bottom Nav
               Positioned(
                 left: 0,
@@ -145,7 +147,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 70),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 16,
+        16,
+        70,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.textPrimary,
         borderRadius: BorderRadius.only(
@@ -156,7 +163,9 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Center(
         child: Text(
           'Profile',
-          style: AppTextStyles.white(AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700)),
+          style: AppTextStyles.white(
+            AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+          ),
         ),
       ),
     );
@@ -186,7 +195,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     user?.name.isNotEmpty == true
                         ? user!.name[0].toUpperCase()
                         : '?',
-                    style: AppTextStyles.heading1.copyWith(fontSize: 48, fontWeight: FontWeight.w700),
+                    style: AppTextStyles.heading1.copyWith(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 )
               : null,
@@ -266,17 +278,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Icon(
-                item.icon,
-                color: AppColors.textPrimary,
-                size: 20,
-              ),
+              child: Icon(item.icon, color: AppColors.textPrimary, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 item.title,
-                style: AppTextStyles.heading5.copyWith(fontWeight: FontWeight.w500),
+                style: AppTextStyles.heading5.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Icon(
@@ -333,7 +343,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 16),
                 Text(
                   'Logout',
-                  style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.heading3.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -356,7 +368,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Center(
                             child: Text(
                               'Cancel',
-                              style: AppTextStyles.buttonMedium.copyWith(fontWeight: FontWeight.w600),
+                              style: AppTextStyles.buttonMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -369,7 +383,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           // Close bottom sheet first
                           Navigator.pop(context);
                           // Dispatch logout event
-                          context.read<AuthBloc>().add(const AuthLogoutRequested());
+                          context.read<AuthBloc>().add(
+                            const AuthLogoutRequested(),
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -380,7 +396,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Center(
                             child: Text(
                               'Logout',
-                              style: AppTextStyles.white(AppTextStyles.buttonMedium.copyWith(fontWeight: FontWeight.w600)),
+                              style: AppTextStyles.white(
+                                AppTextStyles.buttonMedium.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -403,15 +423,15 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.logout_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
+            const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
             const SizedBox(width: 8),
             Text(
               'Logout',
-              style: AppTextStyles.white(AppTextStyles.buttonMedium.copyWith(fontWeight: FontWeight.w600)),
+              style: AppTextStyles.white(
+                AppTextStyles.buttonMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -438,7 +458,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(width: 4),
               _buildNavCenterButton(),
               const SizedBox(width: 4),
-              _buildNavIcon(1, Icons.scoreboard_outlined),
+              _buildNavIcon(1, Icons.groups_2_outlined),
               const SizedBox(width: 4),
               _buildNavIcon(4, Icons.person_outline),
             ],
@@ -456,14 +476,16 @@ class _ProfilePageState extends State<ProfilePage> {
           // Navigate back to Browse page - pop all pages until first route
           Navigator.popUntil(context, (route) => route.isFirst);
         } else if (index == 1) {
-          // Navigate to Scoreboard page
+          // Navigate to Community page
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const ScoreboardPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const CommunityPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -472,10 +494,12 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const SearchPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const SearchPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -484,10 +508,12 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const MyBookingsPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const MyBookingsPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
               transitionDuration: const Duration(milliseconds: 150),
             ),
           );
@@ -501,7 +527,9 @@ class _ProfilePageState extends State<ProfilePage> {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.15) : const Color(0xFF2A2A2A),
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.15)
+              : const Color(0xFF2A2A2A),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -519,10 +547,12 @@ class _ProfilePageState extends State<ProfilePage> {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const SearchPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SearchPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(milliseconds: 150),
           ),
         );

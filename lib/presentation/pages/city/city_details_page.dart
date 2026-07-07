@@ -60,15 +60,18 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
   }
 
   void _fetchCourts() {
-    _courtBloc.add(CourtsFetchRequested(
-      cityId: widget.cityId,
-      material: _selectedMaterial != 'All' ? _selectedMaterial : null,
-    ));
+    _courtBloc.add(
+      CourtsFetchRequested(
+        cityId: widget.cityId,
+        material: _selectedMaterial != 'All' ? _selectedMaterial : null,
+      ),
+    );
   }
 
   List<Court> _filterCourts(List<Court> courts) {
     return courts.where((court) {
-      if (_selectedCategory != 'All' && court.category?.name != _selectedCategory) {
+      if (_selectedCategory != 'All' &&
+          court.category?.name != _selectedCategory) {
         return false;
       }
       if (_selectedMaterial != 'All' && court.material != _selectedMaterial) {
@@ -130,22 +133,20 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                         child: Row(
                           children: [
                             if (_selectedCategory != 'All')
-                              _buildSelectedFilterChip(
-                                _selectedCategory,
-                                () {
-                                  setState(() => _selectedCategory = 'All');
-                                },
-                              ),
+                              _buildSelectedFilterChip(_selectedCategory, () {
+                                setState(() => _selectedCategory = 'All');
+                              }),
                             if (_selectedMaterial != 'All')
-                              _buildSelectedFilterChip(
-                                _selectedMaterial,
-                                () {
-                                  setState(() => _selectedMaterial = 'All');
-                                },
-                              ),
-                            if (_selectedCategory == 'All' && _selectedMaterial == 'All')
+                              _buildSelectedFilterChip(_selectedMaterial, () {
+                                setState(() => _selectedMaterial = 'All');
+                              }),
+                            if (_selectedCategory == 'All' &&
+                                _selectedMaterial == 'All')
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                                 child: Text(
                                   'No filters applied',
                                   style: AppTextStyles.body,
@@ -188,9 +189,7 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
         if (state is CourtLoading) {
           return const Padding(
             padding: EdgeInsets.all(48),
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -200,7 +199,11 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: AppColors.textSecondary),
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: AppColors.textSecondary,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
@@ -211,7 +214,10 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                   GestureDetector(
                     onTap: _fetchCourts,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.textPrimary,
                         borderRadius: BorderRadius.circular(100),
@@ -238,7 +244,11 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.sports_tennis_outlined, size: 48, color: AppColors.textSecondary),
+                    Icon(
+                      Icons.sports_tennis_outlined,
+                      size: 48,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'No courts available in ${widget.cityName}',
@@ -267,11 +277,16 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
   Widget _buildHeroSection() {
     // Alternative city images
     final Map<String, String> cityImages = {
-      'Jakarta': 'https://images.unsplash.com/photo-1546874177-9e664107314e?w=1600',
-      'Bandung': 'https://images.unsplash.com/photo-1584810359583-96fc3448beaa?w=1600',
-      'Surabaya': 'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=1600',
-      'Bali': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600',
-      'Jogja': 'https://images.unsplash.com/photo-1565371767810-ef913a6c4e5e?w=1600',
+      'Jakarta':
+          'https://images.unsplash.com/photo-1546874177-9e664107314e?w=1600',
+      'Bandung':
+          'https://images.unsplash.com/photo-1584810359583-96fc3448beaa?w=1600',
+      'Surabaya':
+          'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=1600',
+      'Bali':
+          'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600',
+      'Jogja':
+          'https://images.unsplash.com/photo-1565371767810-ef913a6c4e5e?w=1600',
     };
 
     final bannerImage = cityImages[widget.cityName] ?? widget.cityImage;
@@ -352,59 +367,20 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
             ),
           ],
         ),
-        // City name, total courts, and AI Explore button
+        // City name and total courts
         const SizedBox(height: 40),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // City name and total courts
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.cityName,
-                      style: AppTextStyles.heading1,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.courtsCount,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // AI Explore button
-              GestureDetector(
-                onTap: () {
-                  // TODO: Implement AI Explore
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.textPrimary,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.auto_awesome_rounded,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'AI Explore',
-                        style: AppTextStyles.white(AppTextStyles.buttonSmall),
-                      ),
-                    ],
-                  ),
+              Text(widget.cityName, style: AppTextStyles.heading1),
+              const SizedBox(height: 2),
+              Text(
+                widget.courtsCount,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -425,10 +401,7 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.white(AppTextStyles.bodySemibold),
-          ),
+          Text(label, style: AppTextStyles.white(AppTextStyles.bodySemibold)),
           const SizedBox(width: 6),
           GestureDetector(
             onTap: onRemove,
@@ -511,9 +484,7 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => CourtDetailsPage(
-              courtId: court.id,
-            ),
+            builder: (_) => CourtDetailsPage(courtId: court.id),
           ),
         );
       },
@@ -545,7 +516,10 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                     bottom: 6,
                     left: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(6),
@@ -563,9 +537,7 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                           const SizedBox(width: 4),
                           Text(
                             court.material,
-                            style: AppTextStyles.tiny.copyWith(
-                              height: 1.0,
-                            ),
+                            style: AppTextStyles.tiny.copyWith(height: 1.0),
                           ),
                         ],
                       ),
@@ -592,7 +564,11 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                   // Location + Category row
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined, size: 16, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
@@ -652,10 +628,7 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Filter Courts',
-                      style: AppTextStyles.heading2,
-                    ),
+                    Text('Filter Courts', style: AppTextStyles.heading2),
                     GestureDetector(
                       onTap: () {
                         setSheetState(() {
@@ -665,17 +638,16 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                       },
                       child: Text(
                         'Reset',
-                        style: AppTextStyles.secondary(AppTextStyles.bodyLargeSemibold),
+                        style: AppTextStyles.secondary(
+                          AppTextStyles.bodyLargeSemibold,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 // Category filter
-                Text(
-                  'Category',
-                  style: AppTextStyles.bodyLargeSemibold,
-                ),
+                Text('Category', style: AppTextStyles.bodyLargeSemibold),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 10,
@@ -688,15 +660,22 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.textPrimary : AppColors.background,
+                          color: isSelected
+                              ? AppColors.textPrimary
+                              : AppColors.background,
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
                           category,
                           style: AppTextStyles.bodySemibold.copyWith(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -721,15 +700,22 @@ class _CityDetailsPageState extends State<CityDetailsPage> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.textPrimary : AppColors.background,
+                          color: isSelected
+                              ? AppColors.textPrimary
+                              : AppColors.background,
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
                           material,
                           style: AppTextStyles.bodySemibold.copyWith(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
                           ),
                         ),
                       ),

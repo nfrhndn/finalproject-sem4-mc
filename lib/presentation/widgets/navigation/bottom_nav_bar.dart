@@ -8,7 +8,7 @@ class BottomNavBar extends StatelessWidget {
   final VoidCallback? onHomeDoubleTap;
   final VoidCallback? onBookingsTap;
   final VoidCallback? onSearchTap;
-  final VoidCallback? onScoreboardTap;
+  final VoidCallback? onCommunityTap;
   final VoidCallback? onProfileTap;
 
   const BottomNavBar({
@@ -18,7 +18,7 @@ class BottomNavBar extends StatelessWidget {
     this.onHomeDoubleTap,
     this.onBookingsTap,
     this.onSearchTap,
-    this.onScoreboardTap,
+    this.onCommunityTap,
     this.onProfileTap,
   });
 
@@ -38,11 +38,16 @@ class BottomNavBar extends StatelessWidget {
             children: [
               _buildNavIcon(0, Icons.home_rounded, onHomeTap, onHomeDoubleTap),
               const SizedBox(width: 4),
-              _buildNavIcon(3, Icons.receipt_long_outlined, onBookingsTap, null),
+              _buildNavIcon(
+                3,
+                Icons.receipt_long_outlined,
+                onBookingsTap,
+                null,
+              ),
               const SizedBox(width: 4),
               _buildCenterButton(),
               const SizedBox(width: 4),
-              _buildNavIcon(1, Icons.scoreboard_outlined, onScoreboardTap, null),
+              _buildNavIcon(1, Icons.groups_2_outlined, onCommunityTap, null),
               const SizedBox(width: 4),
               _buildNavIcon(4, Icons.person_outline, onProfileTap, null),
             ],
@@ -52,7 +57,12 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavIcon(int index, IconData icon, VoidCallback? onTap, VoidCallback? onDoubleTap) {
+  Widget _buildNavIcon(
+    int index,
+    IconData icon,
+    VoidCallback? onTap,
+    VoidCallback? onDoubleTap,
+  ) {
     final isSelected = currentIndex == index;
     return GestureDetector(
       onTap: onTap,
@@ -61,7 +71,9 @@ class BottomNavBar extends StatelessWidget {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.15) : const Color(0xFF2A2A2A),
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.15)
+              : const Color(0xFF2A2A2A),
           shape: BoxShape.circle,
         ),
         child: Icon(

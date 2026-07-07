@@ -7,15 +7,13 @@ import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:padalpro/domain/entities/court.dart';
 import 'package:padalpro/presentation/blocs/court/court.dart';
 import 'package:padalpro/presentation/pages/booking/booking_page.dart';
+import 'package:padalpro/presentation/pages/community/create_match_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CourtDetailsPage extends StatefulWidget {
   final int courtId;
 
-  const CourtDetailsPage({
-    super.key,
-    required this.courtId,
-  });
+  const CourtDetailsPage({super.key, required this.courtId});
 
   @override
   State<CourtDetailsPage> createState() => _CourtDetailsPageState();
@@ -52,23 +50,29 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
   final List<Map<String, dynamic>> _testimonials = [
     {
       'name': 'Andi Pratama',
-      'avatar': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+      'avatar':
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
       'rating': 5,
-      'review': 'Amazing court! The facilities are top-notch and the staff is very friendly. Will definitely come back!',
+      'review':
+          'Amazing court! The facilities are top-notch and the staff is very friendly. Will definitely come back!',
       'date': '2 days ago',
     },
     {
       'name': 'Sarah Wijaya',
-      'avatar': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+      'avatar':
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
       'rating': 5,
-      'review': 'Best padel court in the city. Clean, well-maintained, and great lighting for night games.',
+      'review':
+          'Best padel court in the city. Clean, well-maintained, and great lighting for night games.',
       'date': '1 week ago',
     },
     {
       'name': 'Budi Santoso',
-      'avatar': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      'avatar':
+          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
       'rating': 4,
-      'review': 'Good court overall. Parking can be a bit tricky during peak hours but the court itself is excellent.',
+      'review':
+          'Good court overall. Parking can be a bit tricky during peak hours but the court itself is excellent.',
       'date': '2 weeks ago',
     },
   ];
@@ -120,9 +124,7 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
         body: BlocBuilder<CourtBloc, CourtState>(
           builder: (context, state) {
             if (state is CourtLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (state is CourtError) {
@@ -132,7 +134,11 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 48, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         state.message,
@@ -142,17 +148,24 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () {
-                          _courtBloc.add(CourtDetailsFetchRequested(id: widget.courtId));
+                          _courtBloc.add(
+                            CourtDetailsFetchRequested(id: widget.courtId),
+                          );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.textPrimary,
                             borderRadius: BorderRadius.circular(100),
                           ),
                           child: Text(
                             'Retry',
-                            style: AppTextStyles.white(AppTextStyles.bodyLargeSemibold),
+                            style: AppTextStyles.white(
+                              AppTextStyles.bodyLargeSemibold,
+                            ),
                           ),
                         ),
                       ),
@@ -161,7 +174,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                         onTap: () => Navigator.pop(context),
                         child: Text(
                           'Go Back',
-                          style: AppTextStyles.secondary(AppTextStyles.bodyLargeSemibold),
+                          style: AppTextStyles.secondary(
+                            AppTextStyles.bodyLargeSemibold,
+                          ),
                         ),
                       ),
                     ],
@@ -241,7 +256,10 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
             children: [
               // Price section
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,11 +268,33 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                       court.pricePerHourFormatted,
                       style: AppTextStyles.white(AppTextStyles.heading3),
                     ),
-                    Text(
-                      '/hour',
-                      style: AppTextStyles.caption,
-                    ),
+                    Text('/hour', style: AppTextStyles.caption),
                   ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Create open match button
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CreateMatchPage(initialCourt: court),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.groups_2_outlined,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -267,7 +307,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                       builder: (_) => BookingPage(
                         courtId: court.id,
                         courtName: court.name,
-                        courtImage: photos.isNotEmpty ? photos.first : _defaultPhotos.first,
+                        courtImage: photos.isNotEmpty
+                            ? photos.first
+                            : _defaultPhotos.first,
                         location: cityName,
                         category: categoryName,
                         price: court.pricePerHour.toInt(),
@@ -276,15 +318,15 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 26,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(100),
                   ),
-                  child: Text(
-                    'Book Now',
-                    style: AppTextStyles.heading4,
-                  ),
+                  child: Text('Book Now', style: AppTextStyles.heading4),
                 ),
               ),
             ],
@@ -326,37 +368,42 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                     // Location and Category
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 16, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          cityName,
-                          style: AppTextStyles.body,
-                        ),
-                        const SizedBox(width: 12),
                         Icon(
-                          court.material.toLowerCase() == 'cement' ? Icons.grid_4x4_outlined : Icons.grass_outlined,
+                          Icons.location_on_outlined,
                           size: 16,
                           color: AppColors.textSecondary,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          categoryName,
-                          style: AppTextStyles.body,
+                        Text(cityName, style: AppTextStyles.body),
+                        const SizedBox(width: 12),
+                        Icon(
+                          court.material.toLowerCase() == 'cement'
+                              ? Icons.grid_4x4_outlined
+                              : Icons.grass_outlined,
+                          size: 16,
+                          color: AppColors.textSecondary,
                         ),
+                        const SizedBox(width: 4),
+                        Text(categoryName, style: AppTextStyles.body),
                       ],
                     ),
                     const SizedBox(height: 8),
                     // Material and Total Booked
                     Row(
                       children: [
-                        Icon(Icons.layers_outlined, size: 16, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          court.material,
-                          style: AppTextStyles.body,
+                        Icon(
+                          Icons.layers_outlined,
+                          size: 16,
+                          color: AppColors.textSecondary,
                         ),
+                        const SizedBox(width: 4),
+                        Text(court.material, style: AppTextStyles.body),
                         const SizedBox(width: 12),
-                        Icon(Icons.calendar_month_outlined, size: 16, color: AppColors.textSecondary),
+                        Icon(
+                          Icons.calendar_month_outlined,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${court.bookingsThisMonth ?? 0} booked this month',
@@ -378,7 +425,11 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, size: 16, color: AppColors.textPrimary),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       '4.8',
@@ -494,7 +545,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                   child: Container(
                     width: 70,
                     height: 70,
-                    margin: EdgeInsets.only(right: index < photos.length - 1 ? 10 : 0),
+                    margin: EdgeInsets.only(
+                      right: index < photos.length - 1 ? 10 : 0,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
@@ -524,18 +577,16 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
         color: Colors.white,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        color: AppColors.textPrimary,
-        size: 22,
-      ),
+      child: Icon(icon, color: AppColors.textPrimary, size: 22),
     );
   }
 
   Widget _buildCourtInfoSection(Court court) {
     final cityName = court.city?.name ?? 'Unknown';
     final courtFeatures = court.features ?? [];
-    final aboutText = court.about ?? 'Professional padel court with high-quality facilities. Perfect for both beginners and experienced players.';
+    final aboutText =
+        court.about ??
+        'Professional padel court with high-quality facilities. Perfect for both beginners and experienced players.';
     final phoneNumber = court.phone ?? '-';
 
     return Padding(
@@ -553,14 +604,13 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'About this court',
-                  style: AppTextStyles.heading4,
-                ),
+                Text('About this court', style: AppTextStyles.heading4),
                 const SizedBox(height: 8),
                 Text(
                   aboutText,
-                  style: AppTextStyles.secondary(AppTextStyles.bodyLarge).copyWith(height: 1.5),
+                  style: AppTextStyles.secondary(
+                    AppTextStyles.bodyLarge,
+                  ).copyWith(height: 1.5),
                 ),
               ],
             ),
@@ -577,10 +627,7 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Court Features',
-                    style: AppTextStyles.heading4,
-                  ),
+                  Text('Court Features', style: AppTextStyles.heading4),
                   const SizedBox(height: 12),
                   _buildFeaturesGrid(courtFeatures),
                 ],
@@ -608,28 +655,32 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Location',
-                          style: AppTextStyles.heading4,
-                        ),
+                        Text('Location', style: AppTextStyles.heading4),
                         const SizedBox(height: 4),
-                        Text(
-                          court.name,
-                          style: AppTextStyles.body,
-                        ),
+                        Text(court.name, style: AppTextStyles.body),
                       ],
                     ),
                     // Get Directions button
                     GestureDetector(
                       onTap: () async {
-                        final query = Uri.encodeComponent('${court.name}, $cityName');
-                        final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+                        final query = Uri.encodeComponent(
+                          '${court.name}, $cityName',
+                        );
+                        final url = Uri.parse(
+                          'https://www.google.com/maps/search/?api=1&query=$query',
+                        );
                         if (await canLaunchUrl(url)) {
-                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                          await launchUrl(
+                            url,
+                            mode: LaunchMode.externalApplication,
+                          );
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(100),
@@ -643,10 +694,7 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                               size: 16,
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              'Directions',
-                              style: AppTextStyles.buttonTiny,
-                            ),
+                            Text('Directions', style: AppTextStyles.buttonTiny),
                           ],
                         ),
                       ),
@@ -726,7 +774,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.2),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -747,13 +797,18 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                               ),
                               const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(100),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -761,7 +816,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                                 ),
                                 child: Text(
                                   court.name,
-                                  style: AppTextStyles.captionSmall.copyWith(fontWeight: FontWeight.w600),
+                                  style: AppTextStyles.captionSmall.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],
@@ -822,15 +879,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        court.name,
-                        style: AppTextStyles.heading5,
-                      ),
+                      Text(court.name, style: AppTextStyles.heading5),
                       const SizedBox(height: 2),
-                      Text(
-                        'Court Owner',
-                        style: AppTextStyles.body,
-                      ),
+                      Text('Court Owner', style: AppTextStyles.body),
                     ],
                   ),
                 ),
@@ -897,9 +948,7 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
           padding: EdgeInsets.only(top: i == 0 ? 0 : 10),
           child: Row(
             children: [
-              Expanded(
-                child: _buildFeatureItem(features[i]),
-              ),
+              Expanded(child: _buildFeatureItem(features[i])),
               const SizedBox(width: 12),
               Expanded(
                 child: i + 1 < features.length
@@ -921,21 +970,22 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3), width: 1),
+        border: Border.all(
+          color: AppColors.textSecondary.withValues(alpha: 0.3),
+          width: 1,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: AppColors.textSecondary,
-          ),
+          Icon(icon, size: 20, color: AppColors.textSecondary),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               name,
-              style: AppTextStyles.bodySemibold.copyWith(fontWeight: FontWeight.w500),
+              style: AppTextStyles.bodySemibold.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -953,10 +1003,7 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Testimonials',
-                style: AppTextStyles.heading4,
-              ),
+              Text('Testimonials', style: AppTextStyles.heading4),
               Text(
                 '${_testimonials.length} reviews',
                 style: AppTextStyles.body,
@@ -1023,7 +1070,10 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                         const SizedBox(width: 6),
                         // Verified badge
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(100),
@@ -1031,7 +1081,11 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.verified, size: 10, color: AppColors.textPrimary),
+                              const Icon(
+                                Icons.verified,
+                                size: 10,
+                                color: AppColors.textPrimary,
+                              ),
                               const SizedBox(width: 2),
                               Text(
                                 'Verified',
@@ -1070,7 +1124,9 @@ class _CourtDetailsPageState extends State<CourtDetailsPage> {
             children: List.generate(
               5,
               (i) => Icon(
-                i < testimonial['rating'] ? Icons.star_rounded : Icons.star_outline_rounded,
+                i < testimonial['rating']
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
                 size: 16,
                 color: const Color(0xFFFFD700),
               ),
