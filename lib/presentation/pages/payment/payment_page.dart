@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:padalpro/core/theme/app_colors.dart';
 import 'package:padalpro/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1227,8 +1228,9 @@ class _PaymentPageState extends State<PaymentPage> {
         Text(value, style: AppTextStyles.bodySemibold),
         const SizedBox(width: 8),
         GestureDetector(
-          onTap: () {
-            // TODO: Copy to clipboard
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: value));
+            if (!mounted) return;
             SnackBarHelper.showInfo(context, 'Copied to clipboard');
           },
           child: Icon(
