@@ -9,6 +9,7 @@ import 'package:padalpro/core/injection/injection_container.dart';
 import 'package:padalpro/core/utils/snackbar_helper.dart';
 import 'package:padalpro/domain/repositories/booking_repository.dart';
 import 'package:padalpro/presentation/pages/booking/success_booking_page.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class PaymentPage extends StatefulWidget {
   final int bookingId;
@@ -74,12 +75,33 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   String _getMonthName(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[date.month - 1];
   }
 
   String _getDayName(DateTime date) {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
     return days[date.weekday % 7];
   }
 
@@ -142,7 +164,9 @@ class _PaymentPageState extends State<PaymentPage> {
               const SizedBox(height: 16),
               Text(
                 'Time Expired',
-                style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w800),
+                style: AppTextStyles.heading2.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -210,7 +234,9 @@ class _PaymentPageState extends State<PaymentPage> {
               const SizedBox(height: 24),
               Text(
                 'Upload Proof of Payment',
-                style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.heading3.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -247,7 +273,9 @@ class _PaymentPageState extends State<PaymentPage> {
                             const SizedBox(height: 8),
                             Text(
                               'Camera',
-                              style: AppTextStyles.bodyLargeSemibold.copyWith(fontWeight: FontWeight.w500),
+                              style: AppTextStyles.bodyLargeSemibold.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
@@ -287,7 +315,9 @@ class _PaymentPageState extends State<PaymentPage> {
                             const SizedBox(height: 8),
                             Text(
                               'Gallery',
-                              style: AppTextStyles.bodyLargeSemibold.copyWith(fontWeight: FontWeight.w500),
+                              style: AppTextStyles.bodyLargeSemibold.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
@@ -349,7 +379,9 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 16),
             Text(
               'Confirm Booking',
-              style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyles.heading3.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -372,7 +404,9 @@ class _PaymentPageState extends State<PaymentPage> {
                       child: Center(
                         child: Text(
                           'Cancel',
-                          style: AppTextStyles.buttonMedium.copyWith(fontWeight: FontWeight.w600),
+                          style: AppTextStyles.buttonMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -394,7 +428,9 @@ class _PaymentPageState extends State<PaymentPage> {
                       child: Center(
                         child: Text(
                           'Submit',
-                          style: AppTextStyles.buttonMedium.copyWith(fontWeight: FontWeight.w600),
+                          style: AppTextStyles.buttonMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -414,6 +450,29 @@ class _PaymentPageState extends State<PaymentPage> {
     setState(() {
       _isProcessing = true;
     });
+
+    if (kIsWeb) {
+      await Future.delayed(
+        const Duration(seconds: 1),
+      ); // Beri efek loading sebentar
+      setState(() {
+        _isProcessing = false;
+      });
+      _timer?.cancel();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SuccessBookingPage(
+            courtName: widget.courtName,
+            courtImage: widget.courtImage,
+            location: widget.location,
+            category: widget.category,
+          ),
+        ),
+        (route) => false,
+      );
+      return; // Selesai untuk web
+    }
 
     final result = await _bookingRepository.confirmBooking(
       bookingId: widget.bookingId,
@@ -494,7 +553,9 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 16),
             Text(
               'Cancel Booking?',
-              style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyles.heading3.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -517,7 +578,9 @@ class _PaymentPageState extends State<PaymentPage> {
                       child: Center(
                         child: Text(
                           'Stay',
-                          style: AppTextStyles.buttonMedium.copyWith(fontWeight: FontWeight.w600),
+                          style: AppTextStyles.buttonMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -536,7 +599,9 @@ class _PaymentPageState extends State<PaymentPage> {
                       child: Center(
                         child: Text(
                           'Leave',
-                          style: AppTextStyles.white(AppTextStyles.buttonMedium).copyWith(fontWeight: FontWeight.w600),
+                          style: AppTextStyles.white(
+                            AppTextStyles.buttonMedium,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -574,66 +639,64 @@ class _PaymentPageState extends State<PaymentPage> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                _buildHeader(),
-                // Court card
-                Transform.translate(
-                  offset: const Offset(0, -55),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildCourtCard(),
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  _buildHeader(),
+                  // Court card
+                  Transform.translate(
+                    offset: const Offset(0, -55),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildCourtCard(),
+                    ),
                   ),
-                ),
-                // Booking summary
-                Transform.translate(
-                  offset: const Offset(0, -40),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildBookingSummary(),
+                  // Booking summary
+                  Transform.translate(
+                    offset: const Offset(0, -40),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildBookingSummary(),
+                    ),
                   ),
-                ),
-                // Payment section
-                Transform.translate(
-                  offset: const Offset(0, -24),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildPaymentSection(),
+                  // Payment section
+                  Transform.translate(
+                    offset: const Offset(0, -24),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildPaymentSection(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 120),
-              ],
+                  const SizedBox(height: 120),
+                ],
+              ),
             ),
-          ),
-          // Countdown timer notification - floating on top
-          Positioned(
-            top: 80,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: _buildCountdownNotification(),
+            // Countdown timer notification - floating on top
+            Positioned(
+              top: 80,
+              left: 0,
+              right: 0,
+              child: Center(child: _buildCountdownNotification()),
             ),
-          ),
-          // Bottom CTA
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomCTA(),
-          ),
-        ],
-      ),
+            // Bottom CTA
+            Positioned(left: 0, right: 0, bottom: 0, child: _buildBottomCTA()),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 75),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 16,
+        16,
+        75,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.textPrimary,
         borderRadius: BorderRadius.only(
@@ -667,7 +730,9 @@ class _PaymentPageState extends State<PaymentPage> {
           Expanded(
             child: Text(
               'Payment',
-              style: AppTextStyles.white(AppTextStyles.heading3).copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyles.white(
+                AppTextStyles.heading3,
+              ).copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -692,26 +757,22 @@ class _PaymentPageState extends State<PaymentPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.access_time_rounded,
-            color: Colors.white,
-            size: 18,
-          ),
+          Icon(Icons.access_time_rounded, color: Colors.white, size: 18),
           const SizedBox(width: 8),
           Text(
             'Complete payment in ',
-            style: AppTextStyles.white(AppTextStyles.body).copyWith(color: Colors.white.withValues(alpha: 0.9)),
+            style: AppTextStyles.white(
+              AppTextStyles.body,
+            ).copyWith(color: Colors.white.withValues(alpha: 0.9)),
           ),
           Text(
             _formatCountdown(),
-            style: AppTextStyles.white(AppTextStyles.heading5).copyWith(fontWeight: FontWeight.w800),
+            style: AppTextStyles.white(
+              AppTextStyles.heading5,
+            ).copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(width: 8),
-          Icon(
-            Icons.warning_amber_rounded,
-            color: Colors.white,
-            size: 18,
-          ),
+          Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
         ],
       ),
     );
@@ -740,10 +801,7 @@ class _PaymentPageState extends State<PaymentPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.8),
-            ],
+            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
           ),
         ),
         padding: const EdgeInsets.all(16),
@@ -753,27 +811,41 @@ class _PaymentPageState extends State<PaymentPage> {
           children: [
             Text(
               widget.courtName,
-              style: AppTextStyles.white(AppTextStyles.heading3).copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyles.white(
+                AppTextStyles.heading3,
+              ).copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: Colors.white70),
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: Colors.white70,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   widget.location,
-                  style: AppTextStyles.withColor(AppTextStyles.body, Colors.white70),
+                  style: AppTextStyles.withColor(
+                    AppTextStyles.body,
+                    Colors.white70,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Icon(
-                  widget.category == 'Cement' ? Icons.grid_4x4_outlined : Icons.grass_outlined,
+                  widget.category == 'Cement'
+                      ? Icons.grid_4x4_outlined
+                      : Icons.grass_outlined,
                   size: 14,
                   color: Colors.white70,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   widget.category,
-                  style: AppTextStyles.withColor(AppTextStyles.body, Colors.white70),
+                  style: AppTextStyles.withColor(
+                    AppTextStyles.body,
+                    Colors.white70,
+                  ),
                 ),
               ],
             ),
@@ -787,10 +859,7 @@ class _PaymentPageState extends State<PaymentPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Booking Summary',
-          style: AppTextStyles.heading4,
-        ),
+        Text('Booking Summary', style: AppTextStyles.heading4),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -818,7 +887,10 @@ class _PaymentPageState extends State<PaymentPage> {
                 '$_totalHours ${_totalHours == 1 ? 'hour' : 'hours'}',
               ),
               const SizedBox(height: 12),
-              Divider(height: 1, color: AppColors.textSecondary.withValues(alpha: 0.2)),
+              Divider(
+                height: 1,
+                color: AppColors.textSecondary.withValues(alpha: 0.2),
+              ),
               const SizedBox(height: 12),
               _buildSummaryRow(
                 Icons.payments_rounded,
@@ -838,14 +910,14 @@ class _PaymentPageState extends State<PaymentPage> {
                 _formatPrice(_taxAmount),
               ),
               const SizedBox(height: 12),
-              Divider(height: 1, color: AppColors.textSecondary.withValues(alpha: 0.2)),
+              Divider(
+                height: 1,
+                color: AppColors.textSecondary.withValues(alpha: 0.2),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Text(
-                    'Total',
-                    style: AppTextStyles.heading5,
-                  ),
+                  Text('Total', style: AppTextStyles.heading5),
                   const Spacer(),
                   Text(
                     _formatPrice(_totalPrice),
@@ -863,21 +935,11 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget _buildSummaryRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 18,
-          color: AppColors.textPrimary,
-        ),
+        Icon(icon, size: 18, color: AppColors.textPrimary),
         const SizedBox(width: 10),
-        Text(
-          label,
-          style: AppTextStyles.body,
-        ),
+        Text(label, style: AppTextStyles.body),
         const Spacer(),
-        Text(
-          value,
-          style: AppTextStyles.bodySemibold,
-        ),
+        Text(value, style: AppTextStyles.bodySemibold),
       ],
     );
   }
@@ -886,10 +948,7 @@ class _PaymentPageState extends State<PaymentPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Payment Method',
-          style: AppTextStyles.heading4,
-        ),
+        Text('Payment Method', style: AppTextStyles.heading4),
         const SizedBox(height: 12),
         // White card containing tabs and content
         Container(
@@ -920,16 +979,25 @@ class _PaymentPageState extends State<PaymentPage> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? AppColors.textPrimary : Colors.transparent,
+                            color: isSelected
+                                ? AppColors.textPrimary
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(100),
                           ),
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
                           child: Text(
                             _paymentMethods[index],
                             style: isSelected
-                                ? AppTextStyles.white(AppTextStyles.bodySemibold)
-                                : AppTextStyles.secondary(AppTextStyles.bodySemibold),
+                                ? AppTextStyles.white(
+                                    AppTextStyles.bodySemibold,
+                                  )
+                                : AppTextStyles.secondary(
+                                    AppTextStyles.bodySemibold,
+                                  ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
@@ -1023,14 +1091,8 @@ class _PaymentPageState extends State<PaymentPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'BCA',
-                    style: AppTextStyles.heading4,
-                  ),
-                  Text(
-                    'Bank Central Asia',
-                    style: AppTextStyles.caption,
-                  ),
+                  Text('BCA', style: AppTextStyles.heading4),
+                  Text('Bank Central Asia', style: AppTextStyles.caption),
                 ],
               ),
             ],
@@ -1040,7 +1102,9 @@ class _PaymentPageState extends State<PaymentPage> {
         // Bank account details
         Text(
           'Account Details',
-          style: AppTextStyles.bodyLargeSemibold.copyWith(fontWeight: FontWeight.w700),
+          style: AppTextStyles.bodyLargeSemibold.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
         const SizedBox(height: 12),
         _buildBankDetail('Account Number', '8234567890'),
@@ -1057,16 +1121,15 @@ class _PaymentPageState extends State<PaymentPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.info_outline,
-                size: 20,
-                color: AppColors.textPrimary,
-              ),
+              Icon(Icons.info_outline, size: 20, color: AppColors.textPrimary),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Transfer the exact amount to the account above. Your booking will be confirmed after payment verification.',
-                  style: AppTextStyles.captionSemibold.copyWith(fontWeight: FontWeight.w400, height: 1.5),
+                  style: AppTextStyles.captionSemibold.copyWith(
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                  ),
                 ),
               ),
             ],
@@ -1082,22 +1145,26 @@ class _PaymentPageState extends State<PaymentPage> {
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
+                    border: Border.all(color: AppColors.primary, width: 2),
                   ),
                   child: Row(
                     children: [
                       // Preview image
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          _proofOfPayment!,
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.cover,
-                        ),
+                        child: kIsWeb
+                            ? Image.network(
+                                _proofOfPayment!.path,
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                _proofOfPayment!,
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -1136,7 +1203,10 @@ class _PaymentPageState extends State<PaymentPage> {
                 )
               : Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 20,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -1183,15 +1253,9 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget _buildBankDetail(String label, String value) {
     return Row(
       children: [
-        Text(
-          label,
-          style: AppTextStyles.body,
-        ),
+        Text(label, style: AppTextStyles.body),
         const Spacer(),
-        Text(
-          value,
-          style: AppTextStyles.bodySemibold,
-        ),
+        Text(value, style: AppTextStyles.bodySemibold),
         const SizedBox(width: 8),
         GestureDetector(
           onTap: () {
@@ -1234,7 +1298,9 @@ class _PaymentPageState extends State<PaymentPage> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.textPrimary,
-            disabledBackgroundColor: AppColors.textSecondary.withValues(alpha: 0.3),
+            disabledBackgroundColor: AppColors.textSecondary.withValues(
+              alpha: 0.3,
+            ),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(100),
@@ -1249,10 +1315,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     color: AppColors.textPrimary,
                   ),
                 )
-              : Text(
-                  'Submit Booking',
-                  style: AppTextStyles.buttonLarge,
-                ),
+              : Text('Submit Booking', style: AppTextStyles.buttonLarge),
         ),
       ),
     );

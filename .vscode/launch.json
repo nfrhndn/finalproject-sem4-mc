@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "finalproject-sem4-mc",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=SUPABASE_URL=https://gktakajgyygjoysemkgi.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_rwk7JjMCWTfYEx3c7Vo5pQ_lZiXEMiN"
+      ]
+    }
+  ]
+}

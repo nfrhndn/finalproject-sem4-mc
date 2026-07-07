@@ -64,11 +64,10 @@ class PadalProApp extends StatelessWidget {
           create: (_) => sl<CityBloc>()..add(const CitiesFetchRequested()),
         ),
         BlocProvider(
-          create: (_) => sl<CourtBloc>()..add(const FeaturedCourtsFetchRequested()),
+          create: (_) =>
+              sl<CourtBloc>()..add(const FeaturedCourtsFetchRequested()),
         ),
-        BlocProvider(
-          create: (_) => sl<BookingBloc>(),
-        ),
+        BlocProvider(create: (_) => sl<BookingBloc>()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,
