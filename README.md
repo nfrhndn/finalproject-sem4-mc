@@ -27,6 +27,15 @@ flutter run -d emulator-5554 `
   --dart-define=SUPABASE_ANON_KEY="YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY"
 ```
 
+Jika emulator terasa berat, jalankan di Chrome:
+
+```powershell
+flutter run -d chrome --web-port 8080 `
+  --no-web-resources-cdn `
+  --dart-define=SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co" `
+  --dart-define=SUPABASE_ANON_KEY="YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY"
+```
+
 Jika emulator belum terdeteksi:
 
 ```powershell
@@ -55,6 +64,9 @@ Urutan testing yang disarankan:
 - Buka Scoreboard dari Community match yang sudah paid.
 
 Test case manual tersedia di `TEST_CASE_FLOW_PADALPRO.md`.
+
+Panduan running dari awal untuk teman tim tersedia di
+`PANDUAN_RUNNING_TIM.md`.
 
 ## Backend
 
