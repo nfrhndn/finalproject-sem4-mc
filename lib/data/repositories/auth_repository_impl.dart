@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/data/datasources/auth_local_datasource.dart';
@@ -28,7 +27,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String passwordConfirmation,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
   }) async {
     try {
       final authResult = await _remoteDataSource.register(
@@ -188,7 +187,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
     bool removePhoto = false,
   }) async {
     try {

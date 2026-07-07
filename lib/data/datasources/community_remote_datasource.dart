@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/storage/storage_upload.dart';
 import 'package:padalpro/data/models/community_match_model.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 abstract class CommunityRemoteDataSource {
@@ -25,7 +25,7 @@ abstract class CommunityRemoteDataSource {
 
   Future<CommunityMatchModel> confirmSplitBill({
     required int billId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   });
 
   Future<CommunityMatchModel> cancelMatch(int matchId);
@@ -44,8 +44,8 @@ class CommunityRemoteDataSourceImpl implements CommunityRemoteDataSource {
   }) async {
     try {
       final params = <String, dynamic>{
-        if (status != null) 'p_status': status,
-        if (skillLevel != null) 'p_skill_level': skillLevel,
+        'p_status': ?status,
+        'p_skill_level': ?skillLevel,
       };
       final data = params.isEmpty
           ? await _supabaseClient.rpc('get_community_matches')
@@ -136,7 +136,7 @@ class CommunityRemoteDataSourceImpl implements CommunityRemoteDataSource {
   @override
   Future<CommunityMatchModel> confirmSplitBill({
     required int billId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   }) async {
     final userId = _supabaseClient.auth.currentUser?.id;
     if (userId == null) {
@@ -144,16 +144,15 @@ class CommunityRemoteDataSourceImpl implements CommunityRemoteDataSource {
     }
 
     try {
-      final extension = proofOfPayment.path.split('.').last;
+      final extension = pickedFileExtension(proofOfPayment);
       final objectPath =
           '$userId/split-$billId-${DateTime.now().millisecondsSinceEpoch}.$extension';
-      await _supabaseClient.storage
-          .from('payment-proofs')
-          .upload(
-            objectPath,
-            proofOfPayment,
-            fileOptions: const FileOptions(upsert: true),
-          );
+      await uploadPickedFile(
+        client: _supabaseClient,
+        bucket: 'payment-proofs',
+        objectPath: objectPath,
+        file: proofOfPayment,
+      );
 
       final data = await _supabaseClient.rpc(
         'confirm_split_bill',

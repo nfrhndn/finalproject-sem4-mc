@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/data/datasources/booking_remote_datasource.dart';
@@ -75,7 +74,7 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   Future<Either<Failure, Booking>> confirmBooking({
     required int bookingId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   }) async {
     try {
       final booking = await _remoteDataSource.confirmBooking(

@@ -1,8 +1,8 @@
-import 'dart:io';
-
 import 'package:intl/intl.dart';
 import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/storage/storage_upload.dart';
 import 'package:padalpro/data/models/booking_model.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 /// Response model for creating a booking
@@ -47,7 +47,7 @@ abstract class BookingRemoteDataSource {
   /// Confirm a pending booking with proof of payment
   Future<BookingModel> confirmBooking({
     required int bookingId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   });
 
   /// Cancel a pending booking
@@ -136,7 +136,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   @override
   Future<BookingModel> confirmBooking({
     required int bookingId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   }) async {
     try {
       final userId = _supabaseClient.auth.currentUser?.id;
@@ -144,16 +144,15 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         throw const AuthException(message: 'User is not authenticated');
       }
 
-      final extension = proofOfPayment.path.split('.').last;
+      final extension = pickedFileExtension(proofOfPayment);
       final objectPath =
           '$userId/$bookingId-${DateTime.now().millisecondsSinceEpoch}.$extension';
-      await _supabaseClient.storage
-          .from('payment-proofs')
-          .upload(
-            objectPath,
-            proofOfPayment,
-            fileOptions: const FileOptions(upsert: true),
-          );
+      await uploadPickedFile(
+        client: _supabaseClient,
+        bucket: 'payment-proofs',
+        objectPath: objectPath,
+        file: proofOfPayment,
+      );
 
       final booking = await _supabaseClient
           .from('bookings')

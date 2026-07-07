@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +7,7 @@ import 'package:padalpro/core/utils/snackbar_helper.dart';
 import 'package:padalpro/presentation/blocs/auth/auth.dart';
 import 'package:padalpro/presentation/pages/auth/sign_in_page.dart';
 import 'package:padalpro/presentation/pages/browse/browse_page.dart';
+import 'package:padalpro/presentation/widgets/common/picked_image_preview.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -25,7 +25,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _confirmPasswordController = TextEditingController();
 
   String? _selectedGender;
-  File? _selectedPhoto;
+  XFile? _selectedPhoto;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -76,7 +76,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         );
                         if (image != null) {
                           setState(() {
-                            _selectedPhoto = File(image.path);
+                            _selectedPhoto = image;
                           });
                         }
                       },
@@ -97,7 +97,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         );
                         if (image != null) {
                           setState(() {
-                            _selectedPhoto = File(image.path);
+                            _selectedPhoto = image;
                           });
                         }
                       },
@@ -327,12 +327,6 @@ class _SignUpPageState extends State<SignUpPage> {
                                   decoration: BoxDecoration(
                                     color: AppColors.background,
                                     shape: BoxShape.circle,
-                                    image: _selectedPhoto != null
-                                        ? DecorationImage(
-                                            image: FileImage(_selectedPhoto!),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
                                   ),
                                   child: _selectedPhoto == null
                                       ? Icon(
@@ -340,7 +334,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                           size: 28,
                                           color: AppColors.textSecondary,
                                         )
-                                      : null,
+                                      : ClipOval(
+                                          child: PickedImagePreview(
+                                            file: _selectedPhoto!,
+                                            width: 70,
+                                            height: 70,
+                                          ),
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 16),

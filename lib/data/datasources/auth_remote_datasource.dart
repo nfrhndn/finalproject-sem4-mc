@@ -1,8 +1,8 @@
-import 'dart:io';
-
 import 'package:padalpro/core/config/app_config.dart';
 import 'package:padalpro/core/errors/exceptions.dart';
+import 'package:padalpro/core/storage/storage_upload.dart';
 import 'package:padalpro/data/models/user_model.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 /// Remote data source for authentication operations
@@ -16,7 +16,7 @@ abstract class AuthRemoteDataSource {
     required String passwordConfirmation,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
   });
 
   /// Login with email and password
@@ -50,7 +50,7 @@ abstract class AuthRemoteDataSource {
     required String email,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
     bool removePhoto,
   });
 
@@ -78,7 +78,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String passwordConfirmation,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
     if (password != passwordConfirmation) {
@@ -209,7 +209,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
     bool removePhoto = false,
   }) async {
     try {
@@ -332,13 +332,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return _profileFromSupabase(data);
   }
 
-  Future<String> _uploadProfilePhoto(String userId, File file) async {
-    final extension = file.path.split('.').last;
+  Future<String> _uploadProfilePhoto(String userId, XFile file) async {
+    final extension = pickedFileExtension(file);
     final objectPath =
         '$userId/${DateTime.now().millisecondsSinceEpoch}.$extension';
-    await _supabaseClient.storage
-        .from('profile-photos')
-        .upload(objectPath, file, fileOptions: const FileOptions(upsert: true));
+    await uploadPickedFile(
+      client: _supabaseClient,
+      bucket: 'profile-photos',
+      objectPath: objectPath,
+      file: file,
+    );
     return _supabaseClient.storage
         .from('profile-photos')
         .getPublicUrl(objectPath);

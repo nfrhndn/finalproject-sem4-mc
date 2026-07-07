@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class CommunityEvent extends Equatable {
   const CommunityEvent();
@@ -67,7 +66,7 @@ class CommunityMatchJoinRequested extends CommunityEvent {
 
 class CommunitySplitBillConfirmRequested extends CommunityEvent {
   final int billId;
-  final File proofOfPayment;
+  final XFile proofOfPayment;
 
   const CommunitySplitBillConfirmRequested({
     required this.billId,
