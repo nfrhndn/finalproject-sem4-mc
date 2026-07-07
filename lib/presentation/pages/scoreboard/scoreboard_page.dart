@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -781,562 +782,46 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
     List<String> team1,
     List<String> team2,
   ) {
-    int score1 = 0;
-    int score2 = 0;
-    int elapsedSeconds = 0;
-    late final stopwatch = Stopwatch()..start();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
       backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          // Start timer updates
-          Future.delayed(const Duration(seconds: 1), () {
-            if (stopwatch.isRunning) {
-              setModalState(() {
-                elapsedSeconds = stopwatch.elapsed.inSeconds;
-              });
-            }
+      builder: (context) => LiveMatchSheet(
+        team1: team1,
+        team2: team2,
+        onMatchFinished: (score1, score2) {
+          final now = DateTime.now();
+          final months = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
+          final dateStr =
+              '${months[now.month - 1]} ${now.day}, ${now.year}';
+
+          setState(() {
+            _matches.insert(0, {
+              'id': 'M${DateTime.now().millisecondsSinceEpoch}',
+              'date': dateStr,
+              'team1': team1,
+              'team2': team2,
+              'score1': score1,
+              'score2': score2,
+              'status': 'Completed',
+            });
           });
-
-          String formatTime(int totalSeconds) {
-            final minutes = totalSeconds ~/ 60;
-            final seconds = totalSeconds % 60;
-            return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-          }
-
-          return Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(context).padding.bottom + 120,
-            ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Handle bar
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Header with live indicator and timer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF74D50).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF74D50),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'LIVE',
-                            style:
-                                AppTextStyles.withColor(
-                                  AppTextStyles.captionSmallBold,
-                                  const Color(0xFFF74D50),
-                                ).copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.textPrimary.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.timer_outlined,
-                            size: 14,
-                            color: AppColors.textPrimary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            formatTime(elapsedSeconds),
-                            style: AppTextStyles.captionSemibold.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Main scoreboard card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.textPrimary,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Column(
-                    children: [
-                      // Teams and score row
-                      Row(
-                        children: [
-                          // Team 1
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Text(
-                                  'TEAM 1',
-                                  style: AppTextStyles.secondary(
-                                    AppTextStyles.tiny,
-                                  ).copyWith(letterSpacing: 1),
-                                ),
-                                const SizedBox(height: 8),
-                                ...team1.map(
-                                  (player) => Text(
-                                    player,
-                                    style: AppTextStyles.white(
-                                      AppTextStyles.bodySemibold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Score
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '$score1',
-                                  style: AppTextStyles.heading1.copyWith(
-                                    fontSize: 36,
-                                    color: score1 > score2
-                                        ? AppColors.primary
-                                        : Colors.white,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  child: Text(
-                                    ':',
-                                    style:
-                                        AppTextStyles.secondary(
-                                          AppTextStyles.heading1,
-                                        ).copyWith(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                ),
-                                Text(
-                                  '$score2',
-                                  style: AppTextStyles.heading1.copyWith(
-                                    fontSize: 36,
-                                    color: score2 > score1
-                                        ? AppColors.primary
-                                        : Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Team 2
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Text(
-                                  'TEAM 2',
-                                  style: AppTextStyles.secondary(
-                                    AppTextStyles.tiny,
-                                  ).copyWith(letterSpacing: 1),
-                                ),
-                                const SizedBox(height: 8),
-                                ...team2.map(
-                                  (player) => Text(
-                                    player,
-                                    style: AppTextStyles.white(
-                                      AppTextStyles.bodySemibold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // Score control buttons
-                      Row(
-                        children: [
-                          // Team 1 controls
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    if (score1 > 0) {
-                                      setModalState(() => score1--);
-                                    }
-                                  },
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.remove_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                GestureDetector(
-                                  onTap: () => setModalState(() => score1++),
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.add_rounded,
-                                      color: AppColors.textPrimary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 80),
-                          // Team 2 controls
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    if (score2 > 0) {
-                                      setModalState(() => score2--);
-                                    }
-                                  },
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.remove_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                GestureDetector(
-                                  onTap: () => setModalState(() => score2++),
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.add_rounded,
-                                      color: AppColors.textPrimary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          stopwatch.stop();
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Cancel',
-                              style: AppTextStyles.heading5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          // Show confirmation modal
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            barrierColor: Colors.transparent,
-                            builder: (confirmContext) => Container(
-                              padding: const EdgeInsets.fromLTRB(
-                                20,
-                                24,
-                                20,
-                                32,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, -5),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Icon
-                                  Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.sports_tennis_rounded,
-                                      color: AppColors.textPrimary,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'End Match',
-                                    style: AppTextStyles.heading3.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Are you sure you want to end this match?',
-                                    style: AppTextStyles.secondary(
-                                      AppTextStyles.bodyLarge,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 24),
-                                  // Buttons
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: () =>
-                                              Navigator.pop(confirmContext),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 14,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.background,
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'Continue',
-                                                style: AppTextStyles.heading5
-                                                    .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            stopwatch.stop();
-                                            final now = DateTime.now();
-                                            final months = [
-                                              'Jan',
-                                              'Feb',
-                                              'Mar',
-                                              'Apr',
-                                              'May',
-                                              'Jun',
-                                              'Jul',
-                                              'Aug',
-                                              'Sep',
-                                              'Oct',
-                                              'Nov',
-                                              'Dec',
-                                            ];
-                                            final dateStr =
-                                                '${months[now.month - 1]} ${now.day}, ${now.year}';
-
-                                            setState(() {
-                                              _matches.insert(0, {
-                                                'id':
-                                                    'M${DateTime.now().millisecondsSinceEpoch}',
-                                                'date': dateStr,
-                                                'team1': team1,
-                                                'team2': team2,
-                                                'score1': score1,
-                                                'score2': score2,
-                                                'status': 'Completed',
-                                              });
-                                            });
-                                            _saveMatches();
-                                            Navigator.pop(
-                                              confirmContext,
-                                            ); // Close confirmation
-                                            Navigator.pop(
-                                              context,
-                                            ); // Close live match
-                                            SnackBarHelper.showSuccess(
-                                              context,
-                                              'Match saved!',
-                                            );
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 14,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primary,
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'End Match',
-                                                style: AppTextStyles.heading5
-                                                    .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'End Match',
-                              style: AppTextStyles.heading5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
+          _saveMatches();
         },
       ),
     );
@@ -1526,6 +1011,555 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
           size: 26,
           color: AppColors.textPrimary,
         ),
+      ),
+    );
+  }
+}
+
+
+class LiveMatchSheet extends StatefulWidget {
+  final List<String> team1;
+  final List<String> team2;
+  final void Function(int score1, int score2) onMatchFinished;
+
+  const LiveMatchSheet({
+    super.key,
+    required this.team1,
+    required this.team2,
+    required this.onMatchFinished,
+  });
+
+  @override
+  State<LiveMatchSheet> createState() => _LiveMatchSheetState();
+}
+
+class _LiveMatchSheetState extends State<LiveMatchSheet> {
+  int score1 = 0;
+  int score2 = 0;
+  int elapsedSeconds = 0;
+  Timer? _timer;
+  late final Stopwatch stopwatch = Stopwatch();
+
+  @override
+  void initState() {
+    super.initState();
+    stopwatch.start();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (stopwatch.isRunning) {
+        setState(() {
+          elapsedSeconds = stopwatch.elapsed.inSeconds;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    stopwatch.stop();
+    super.dispose();
+  }
+
+  String formatTime(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        MediaQuery.of(context).padding.bottom + 120,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.textSecondary.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(100),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Header with live indicator and timer
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF74D50).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF74D50),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'LIVE',
+                      style:
+                          AppTextStyles.withColor(
+                            AppTextStyles.captionSmallBold,
+                            const Color(0xFFF74D50),
+                          ).copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.textPrimary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formatTime(elapsedSeconds),
+                      style: AppTextStyles.captionSemibold.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Main scoreboard card
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.textPrimary,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              children: [
+                // Teams and score row
+                Row(
+                  children: [
+                    // Team 1
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            'TEAM 1',
+                            style: AppTextStyles.secondary(
+                              AppTextStyles.tiny,
+                            ).copyWith(letterSpacing: 1),
+                          ),
+                          const SizedBox(height: 8),
+                          ...widget.team1.map(
+                            (player) => Text(
+                              player,
+                              style: AppTextStyles.white(
+                                AppTextStyles.bodySemibold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Score
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            '$score1',
+                            style: AppTextStyles.heading1.copyWith(
+                              fontSize: 36,
+                              color: score1 > score2
+                                  ? AppColors.primary
+                                  : Colors.white,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                            ),
+                            child: Text(
+                              ':',
+                              style:
+                                  AppTextStyles.secondary(
+                                    AppTextStyles.heading1,
+                                  ).copyWith(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                          Text(
+                            '$score2',
+                            style: AppTextStyles.heading1.copyWith(
+                              fontSize: 36,
+                              color: score2 > score1
+                                  ? AppColors.primary
+                                  : Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Team 2
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            'TEAM 2',
+                            style: AppTextStyles.secondary(
+                              AppTextStyles.tiny,
+                            ).copyWith(letterSpacing: 1),
+                          ),
+                          const SizedBox(height: 8),
+                          ...widget.team2.map(
+                            (player) => Text(
+                              player,
+                              style: AppTextStyles.white(
+                                AppTextStyles.bodySemibold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Score control buttons
+                Row(
+                  children: [
+                    // Team 1 controls
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              if (score1 > 0) {
+                                setState(() => score1--);
+                              }
+                            },
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(
+                                  alpha: 0.1,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.remove_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () => setState(() => score1++),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                color: AppColors.textPrimary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 80),
+                    // Team 2 controls
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              if (score2 > 0) {
+                                setState(() => score2--);
+                              }
+                            },
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(
+                                  alpha: 0.1,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.remove_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () => setState(() => score2++),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                color: AppColors.textPrimary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    stopwatch.stop();
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Cancel',
+                        style: AppTextStyles.heading5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    // Show confirmation modal
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      barrierColor: Colors.transparent,
+                      builder: (confirmContext) => Container(
+                        padding: const EdgeInsets.fromLTRB(
+                          20,
+                          24,
+                          20,
+                          32,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, -5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Icon
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.2,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.sports_tennis_rounded,
+                                color: AppColors.textPrimary,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'End Match',
+                              style: AppTextStyles.heading3.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Are you sure you want to end this match?',
+                              style: AppTextStyles.secondary(
+                                AppTextStyles.bodyLarge,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            // Buttons
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        Navigator.pop(confirmContext),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.background,
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Continue',
+                                          style: AppTextStyles.heading5
+                                              .copyWith(
+                                                fontWeight:
+                                                    FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      stopwatch.stop();
+                                      widget.onMatchFinished(score1, score2);
+                                      Navigator.pop(confirmContext); // Close confirmation
+                                      Navigator.pop(context); // Close live match
+                                      SnackBarHelper.showSuccess(
+                                        context,
+                                        'Match saved!',
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'End Match',
+                                          style: AppTextStyles.heading5
+                                              .copyWith(
+                                                fontWeight:
+                                                    FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'End Match',
+                        style: AppTextStyles.heading5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
