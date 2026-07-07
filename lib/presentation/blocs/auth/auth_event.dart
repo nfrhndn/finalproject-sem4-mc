@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// Base class for all auth events
 abstract class AuthEvent extends Equatable {
@@ -23,7 +22,7 @@ class AuthRegisterRequested extends AuthEvent {
   final String passwordConfirmation;
   final String? phone;
   final String? gender;
-  final File? profilePhoto;
+  final XFile? profilePhoto;
 
   const AuthRegisterRequested({
     required this.name,
@@ -89,7 +88,7 @@ class AuthUpdateProfileRequested extends AuthEvent {
   final String email;
   final String? phone;
   final String? gender;
-  final File? profilePhoto;
+  final XFile? profilePhoto;
   final bool removePhoto;
 
   const AuthUpdateProfileRequested({

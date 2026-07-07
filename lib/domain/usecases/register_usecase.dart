@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/domain/entities/user.dart';
 import 'package:padalpro/domain/repositories/auth_repository.dart';
@@ -13,7 +12,7 @@ class RegisterParams {
   final String passwordConfirmation;
   final String? phone;
   final String? gender;
-  final File? profilePhoto;
+  final XFile? profilePhoto;
 
   const RegisterParams({
     required this.name,

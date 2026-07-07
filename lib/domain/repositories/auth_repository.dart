@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/domain/entities/user.dart';
 
@@ -16,7 +15,7 @@ abstract class AuthRepository {
     required String passwordConfirmation,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
   });
 
   /// Login with email and password
@@ -53,7 +52,7 @@ abstract class AuthRepository {
     required String email,
     String? phone,
     String? gender,
-    File? profilePhoto,
+    XFile? profilePhoto,
     bool removePhoto,
   });
 

@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:padalpro/core/errors/exceptions.dart';
 import 'package:padalpro/core/errors/failures.dart';
 import 'package:padalpro/data/datasources/community_remote_datasource.dart';
@@ -76,7 +75,7 @@ class CommunityRepositoryImpl implements CommunityRepository {
   @override
   Future<Either<Failure, CommunityMatch>> confirmSplitBill({
     required int billId,
-    required File proofOfPayment,
+    required XFile proofOfPayment,
   }) async {
     try {
       final match = await _remoteDataSource.confirmSplitBill(
