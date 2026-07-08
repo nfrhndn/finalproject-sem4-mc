@@ -160,6 +160,8 @@ return MultiBlocProvider(
 | FutureBuilder | Recent search di Search Page |
 | StreamBuilder | Realtime status di Booking Details |
 | BLoC | Auth, City, Court, Booking, dan Community |
+| API Integration + BLoC | BLoC mengakses repository yang terhubung ke Supabase API |
+| Local Storage fallback | Cached user/session, recent search, dan data scoreboard lokal |
 
 Dengan kondisi saat ini, materi utama yang diajarkan sudah diterapkan di dalam
 flow aplikasi.
@@ -227,6 +229,18 @@ Backend menggunakan Supabase untuk:
 - Realtime untuk update status booking.
 - RLS policy untuk membatasi akses data sesuai user.
 
+Aplikasi ini tidak menggunakan REST API custom buatan sendiri. Integrasi API
+dilakukan melalui Supabase API menggunakan package `supabase_flutter`.
+
+API yang digunakan:
+
+- **Auth API** untuk register, login, logout, reset password, dan session.
+- **Database API** untuk data court, city, booking, payment, dan community.
+- **Storage API** untuk upload foto profile dan bukti pembayaran.
+- **RPC API** untuk menjalankan function seperti create booking, cek slot,
+  join match, dan split bill.
+- **Realtime API** untuk update status booking secara realtime.
+
 Alasan menggunakan Supabase:
 
 - Sudah menyediakan authentication, database PostgreSQL, storage, dan realtime
@@ -237,6 +251,14 @@ Alasan menggunakan Supabase:
   user yang sedang login.
 - Mempercepat pengembangan final project karena backend utama tidak perlu
   dibuat dari nol.
+
+Local storage digunakan sebagai fallback dan penyimpanan data lokal:
+
+- `flutter_secure_storage` menyimpan token dan cached user. Jika network gagal
+  saat mengambil current user, aplikasi mencoba memakai cached user.
+- `shared_preferences` menyimpan recent search dan data scoreboard lokal.
+- Fallback offline saat ini difokuskan untuk session/profile dan fitur lokal,
+  belum untuk seluruh data court, booking, dan community.
 
 ## Rancangan Database / ERD
 
